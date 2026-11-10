@@ -6,7 +6,7 @@
 %================================================
 \usepackage[utf8]{inputenc}   % if you use pdflatex (safe)
 \usepackage[T1]{fontenc}
-\usepackage[spanish]{babel}
+\usepackage[spanish,es-tabla]{babel}
 \usepackage[margin=1.15in]{geometry}
 \usepackage{microtype}
 \usepackage{iftex}
@@ -21,11 +21,28 @@
 \usepgfplotslibrary{fillbetween}
 \usetikzlibrary{arrows.meta,positioning,calc,patterns,decorations.pathreplacing}
 \pgfplotsset{compat=1.18}
+\pgfplotsset{dens/.style={width=0.86\textwidth,height=4.9cm,axis x line=bottom,
+  axis y line=none,ymin=0,samples=181,clip=false,title style={font=\small},
+  xlabel style={font=\small},tick label style={font=\footnotesize}}}
+\usepackage{booktabs}
+\usepackage{float}
+\usepackage{array}
 \usepackage{mathrsfs}
 \usepackage{bbm}
 \usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{cleveref}
+\crefname{theorem}{teorema}{teoremas}\Crefname{theorem}{Teorema}{Teoremas}
+\crefname{lemma}{lema}{lemas}\Crefname{lemma}{Lema}{Lemas}
+\crefname{proposition}{proposición}{proposiciones}\Crefname{proposition}{Proposición}{Proposiciones}
+\crefname{corollary}{corolario}{corolarios}\Crefname{corollary}{Corolario}{Corolarios}
+\crefname{definition}{definición}{definiciones}\Crefname{definition}{Definición}{Definiciones}
+\crefname{example}{ejemplo}{ejemplos}\Crefname{example}{Ejemplo}{Ejemplos}
+\crefname{exercise}{ejercicio}{ejercicios}\Crefname{exercise}{Ejercicio}{Ejercicios}
+\crefname{remark}{observación}{observaciones}\Crefname{remark}{Observación}{Observaciones}
+\crefname{table}{tabla}{tablas}\Crefname{table}{Tabla}{Tablas}
+\crefname{section}{sección}{secciones}\Crefname{section}{Sección}{Secciones}
+\crefname{subsection}{subsección}{subsecciones}\Crefname{subsection}{Subsección}{Subsecciones}
 
 \hypersetup{
   colorlinks=true,
@@ -176,7 +193,7 @@ $p=\Pbb(R>0)$; $\overline X$ estima $p$.
 
 \begin{solution}
 Bajo Bernoulli$(p)$, $\E[X_i]=p$ y $\Var(X_i)=p(1-p)$.
-La estimación natural de $p$ es $\widehat p=\overline X$ (también es MLE; ver \Cref{ex:mle-bernoulli}).
+La estimación natural de $p$ es $\widehat p=\overline X$ (también es MLE; ver Ejemplo~\ref{ex:mle-bernoulli}).
 \end{solution}
 
 \begin{center}
@@ -196,7 +213,7 @@ Un modelo base es $X_i\sim \mathrm{Exp}(\lambda)$ i.i.d.
 
 \begin{solution}
 Aquí $\lambda$ es la \emph{intensidad} (órdenes por segundo).
-El estimador MLE es $\widehat\lambda=1/\overline X$ (ver \Cref{ex:mle-exp}).
+El estimador MLE es $\widehat\lambda=1/\overline X$ (ver Ejemplo~\ref{ex:mle-exp}).
 \end{solution}
 
 \begin{center}
@@ -573,7 +590,221 @@ Un IC exacto $1-\alpha$ para $\mu$ es
 Por \Cref{thm:tPivot}, $\Pbb(|T|\le t_{1-\alpha/2,n-1})=1-\alpha$. Despeja $\mu$.
 \end{solution}
 
-\subsection{Ejemplos resueltos de IC, incluyendo finanzas}
+\subsection{Cómo encontrar los cuantiles $t$ y $\chi^2$}\label{subsec:cuantiles}
+
+Los intervalos y las pruebas de este texto tienen fronteras que son cuantiles. Conviene fijar la convención una sola vez.
+
+\begin{definition}[Cuantiles]
+Para $0<\gamma<1$ y $\nu$ grados de libertad, $t_{\gamma,\nu}$ y $\chi^2_{\gamma,\nu}$ son los números tales que
+\[
+\Pbb\bigl(t_\nu\le t_{\gamma,\nu}\bigr)=\gamma,
+\qquad
+\Pbb\bigl(\chi^2_\nu\le \chi^2_{\gamma,\nu}\bigr)=\gamma ,
+\]
+es decir, $\gamma$ es el área \emph{a la izquierda} del cuantil. Para la normal estándar se conserva la convención de cola derecha: $\Pbb(Z\ge z_\alpha)=\alpha$, de modo que $z_\alpha$ es el cuantil de orden $1-\alpha$ (por ejemplo $z_{0.025}=1.960$).
+\end{definition}
+
+\begin{proposition}[Simetría de la $t$]\label{prop:tsym}
+Para todo $\gamma\in(0,1)$ se tiene $t_{1-\gamma,\nu}=-t_{\gamma,\nu}$. En particular $t_{\alpha,\nu}=-t_{1-\alpha,\nu}$.
+\end{proposition}
+
+\begin{solution}
+La densidad de $t_\nu$ es par, así que $\Pbb(t_\nu\le -c)=\Pbb(t_\nu\ge c)=1-\Pbb(t_\nu\le c)$ para todo $c$. Con $c=t_{\gamma,\nu}$ queda $\Pbb(t_\nu\le -t_{\gamma,\nu})=1-\gamma$, que es la definición de $t_{1-\gamma,\nu}$.
+\end{solution}
+
+La chi-cuadrada no es simétrica (vive en $[0,\infty)$ y tiene cola derecha larga), así que un intervalo o una prueba bilateral necesitan \emph{dos} cuantiles que hay que buscar por separado: $\chi^2_{\alpha/2,\nu}$ y $\chi^2_{1-\alpha/2,\nu}$. Ninguno se obtiene del otro cambiando el signo.
+
+\paragraph{Receta en tres pasos.}
+\begin{enumerate}[label=\textbf{(\arabic*)},leftmargin=2.2em]
+\item \emph{Grados de libertad.} $\nu=n-1$ para una muestra (media con $S$, varianza, diferencias pareadas); $\nu=n_1+n_2-2$ para dos muestras con varianza común; $\nu=n-2$ en regresión simple.
+\item \emph{Del nivel al área.} Con nivel $\alpha$:
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{lcc}
+\toprule
+Alternativa & frontera $t$ & frontera(s) $\chi^2$ \\
+\midrule
+bilateral ($\neq$) & $\pm t_{1-\alpha/2,\nu}$ & $\chi^2_{\alpha/2,\nu}$ y $\chi^2_{1-\alpha/2,\nu}$ \\
+cola derecha ($>$) & $t_{1-\alpha,\nu}$ & $\chi^2_{1-\alpha,\nu}$ \\
+cola izquierda ($<$) & $t_{\alpha,\nu}=-t_{1-\alpha,\nu}$ & $\chi^2_{\alpha,\nu}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+\item \emph{Leer la tabla.} Fila $\nu$, columna $\gamma$. Cuidado: muchas tablas encabezan las columnas con el área de la cola \emph{derecha} $1-\gamma$. Una prueba rápida de qué convención usa una tabla: en la $t$, la columna de $1.960$ en la fila $\nu=\infty$ es la de $\gamma=0.975$ (cola derecha $0.025$).
+\end{enumerate}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-4.5,xmax=4.5,ymax=0.70871,
+  xlabel={$t$},title={$t_{19}$: área central $0.95$}]
+\addplot[name path=f,domain=-4.5:4.5,draw=none] {0.393730*(1+x*x/19)^(-10)};
+\path[name path=ax] (axis cs:-4.5,0) -- (axis cs:4.5,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=-4.5:-2.093}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=2.093:4.5}];
+\node[font=\small,text=MainBlue] at (axis cs:0,0.12) {$0.95$};\node[font=\small,text=MainRed] at (axis cs:-3.3,0.05) {$0.025$};\node[font=\small,text=MainRed] at (axis cs:3.3,0.05) {$0.025$};
+\addplot[domain=-4.5:4.5,MainBlue,thick] {0.393730*(1+x*x/19)^(-10)};
+\draw[dashed,MainRed,thick] (axis cs:-2.093,0) -- (axis cs:-2.093,0.21655);
+\node[anchor=south east,text=MainRed,font=\small,inner sep=2pt] at (axis cs:-2.093,0.21655) {$-t_{0.975,19}=-2.093$};
+\draw[dashed,MainRed,thick] (axis cs:2.093,0) -- (axis cs:2.093,0.21655);
+\node[anchor=south west,text=MainRed,font=\small,inner sep=2pt] at (axis cs:2.093,0.21655) {$t_{0.975,19}=2.093$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=0.3,xmax=45,ymax=0.12195,
+  xlabel={$q$},title={$\chi^2_{19}$: dos cuantiles distintos}]
+\addplot[name path=f,domain=0.3:45,draw=none] {exp(8.5*ln(x)-x/2-18.274232)};
+\path[name path=ax] (axis cs:0.3,0) -- (axis cs:45,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=0.3:8.907}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=32.852:45}];
+\node[font=\small,text=MainBlue] at (axis cs:18.3,0.03) {$0.95$};\node[font=\small,text=MainRed] at (axis cs:5,0.012) {$0.025$};\node[font=\small,text=MainRed] at (axis cs:37,0.012) {$0.025$};
+\addplot[domain=0.3:45,MainBlue,thick] {exp(8.5*ln(x)-x/2-18.274232)};
+\draw[dashed,MainRed,thick] (axis cs:8.907,0) -- (axis cs:8.907,0.09824);
+\node[anchor=south,text=MainRed,font=\small,inner sep=2pt] at (axis cs:8.907,0.09824) {$\chi^2_{0.025,19}=8.907$};
+\draw[dashed,MainRed,thick] (axis cs:32.852,0) -- (axis cs:32.852,0.09824);
+\node[anchor=south,text=MainRed,font=\small,inner sep=2pt] at (axis cs:32.852,0.09824) {$\chi^2_{0.975,19}=32.852$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de las figuras.} En la $t_{19}$ las dos colas de área $0.025$ son imágenes en espejo, así que basta un número, $2.093$. En la $\chi^2_{19}$ las colas tienen la misma área pero fronteras muy distintas, $8.907$ y $32.852$, y el centro de masa (media $19$) no está a la mitad entre ellas.
+
+\begin{table}[H]
+\centering\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{r|ccccc}
+\toprule
+& \multicolumn{5}{c}{$\gamma=\Pbb(t_\nu\le t_{\gamma,\nu})$}\\
+$\nu$ & $0.90$ & $0.95$ & $0.975$ & $0.99$ & $0.995$ \\
+\midrule
+1 & 3.078 & 6.314 & 12.706 & 31.821 & 63.657 \\
+2 & 1.886 & 2.920 & 4.303 & 6.965 & 9.925 \\
+3 & 1.638 & 2.353 & 3.182 & 4.541 & 5.841 \\
+4 & 1.533 & 2.132 & 2.776 & 3.747 & 4.604 \\
+5 & 1.476 & 2.015 & 2.571 & 3.365 & 4.032 \\
+6 & 1.440 & 1.943 & 2.447 & 3.143 & 3.707 \\
+7 & 1.415 & 1.895 & 2.365 & 2.998 & 3.499 \\
+8 & 1.397 & 1.860 & 2.306 & 2.896 & 3.355 \\
+9 & 1.383 & 1.833 & 2.262 & 2.821 & 3.250 \\
+10 & 1.372 & 1.812 & 2.228 & 2.764 & 3.169 \\
+12 & 1.356 & 1.782 & 2.179 & 2.681 & 3.055 \\
+15 & 1.341 & 1.753 & 2.131 & 2.602 & 2.947 \\
+19 & 1.328 & 1.729 & 2.093 & 2.539 & 2.861 \\
+20 & 1.325 & 1.725 & 2.086 & 2.528 & 2.845 \\
+29 & 1.311 & 1.699 & 2.045 & 2.462 & 2.756 \\
+30 & 1.310 & 1.697 & 2.042 & 2.457 & 2.750 \\
+40 & 1.303 & 1.684 & 2.021 & 2.423 & 2.704 \\
+60 & 1.296 & 1.671 & 2.000 & 2.390 & 2.660 \\
+120 & 1.289 & 1.658 & 1.980 & 2.358 & 2.617 \\
+\midrule
+$\infty$ & 1.282 & 1.645 & 1.960 & 2.326 & 2.576 \\
+\bottomrule
+\end{tabular}
+\caption{Cuantiles $t_{\gamma,\nu}$ de la $t$ de Student. La fila $\infty$ es la normal estándar: $t_{0.975,\infty}=z_{0.025}=1.960$.}
+\label{tab:t}
+\end{table}
+
+\begin{table}[H]
+\centering\small
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{r|cccccc}
+\toprule
+& \multicolumn{6}{c}{$\gamma=\Pbb(\chi^2_\nu\le \chi^2_{\gamma,\nu})$}\\
+$\nu$ & $0.005$ & $0.025$ & $0.05$ & $0.95$ & $0.975$ & $0.995$ \\
+\midrule
+1 & 0.00004 & 0.00098 & 0.00393 & 3.841 & 5.024 & 7.879 \\
+2 & 0.010 & 0.051 & 0.103 & 5.991 & 7.378 & 10.597 \\
+3 & 0.072 & 0.216 & 0.352 & 7.815 & 9.348 & 12.838 \\
+4 & 0.207 & 0.484 & 0.711 & 9.488 & 11.143 & 14.860 \\
+5 & 0.412 & 0.831 & 1.145 & 11.070 & 12.833 & 16.750 \\
+6 & 0.676 & 1.237 & 1.635 & 12.592 & 14.449 & 18.548 \\
+7 & 0.989 & 1.690 & 2.167 & 14.067 & 16.013 & 20.278 \\
+8 & 1.344 & 2.180 & 2.733 & 15.507 & 17.535 & 21.955 \\
+9 & 1.735 & 2.700 & 3.325 & 16.919 & 19.023 & 23.589 \\
+10 & 2.156 & 3.247 & 3.940 & 18.307 & 20.483 & 25.188 \\
+12 & 3.074 & 4.404 & 5.226 & 21.026 & 23.337 & 28.300 \\
+15 & 4.601 & 6.262 & 7.261 & 24.996 & 27.488 & 32.801 \\
+19 & 6.844 & 8.907 & 10.117 & 30.144 & 32.852 & 38.582 \\
+20 & 7.434 & 9.591 & 10.851 & 31.410 & 34.170 & 39.997 \\
+29 & 13.121 & 16.047 & 17.708 & 42.557 & 45.722 & 52.336 \\
+30 & 13.787 & 16.791 & 18.493 & 43.773 & 46.979 & 53.672 \\
+40 & 20.707 & 24.433 & 26.509 & 55.758 & 59.342 & 66.766 \\
+50 & 27.991 & 32.357 & 34.764 & 67.505 & 71.420 & 79.490 \\
+60 & 35.534 & 40.482 & 43.188 & 79.082 & 83.298 & 91.952 \\
+\bottomrule
+\end{tabular}
+\caption{Cuantiles $\chi^2_{\gamma,\nu}$ de la chi-cuadrada. Las tres columnas de la izquierda dan fronteras de cola izquierda; las tres de la derecha, de cola derecha.}
+\label{tab:chi2}
+\end{table}
+
+\begin{example}[Lectura directa]
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Prueba $t$ bilateral, $n=20$, $\alpha=0.05$: $\nu=19$, $\gamma=0.975$, frontera $\pm t_{0.975,19}=\pm 2.093$.
+\item Prueba $t$ de cola izquierda, $n=16$, $\alpha=0.05$: $\nu=15$, frontera $t_{0.05,15}=-t_{0.95,15}=-1.753$.
+\item Prueba $\chi^2$ bilateral para $\sigma^2$, $n=20$, $\alpha=0.05$: $\nu=19$, fronteras $\chi^2_{0.025,19}=8.907$ y $\chi^2_{0.975,19}=32.852$.
+\item Prueba $\chi^2$ de cola derecha, $n=30$, $\alpha=0.05$: $\nu=29$, frontera $\chi^2_{0.95,29}=42.557$.
+\item IC del $99\%$ para $\mu$ con $n=11$: $\nu=10$, $\gamma=0.995$, $t_{0.995,10}=3.169$.
+\end{enumerate}
+\end{example}
+
+\paragraph{Grados de libertad que no están en la tabla.} Los cuantiles $t_{\gamma,\nu}$ y $\chi^2_{\gamma,\nu}/\nu$ son casi lineales en $1/\nu$, así que se interpola en $1/\nu$ y no en $\nu$.
+
+\begin{example}[Interpolación]
+Para $t_{0.975,24}$ la tabla da $t_{0.975,20}=2.086$ y $t_{0.975,30}=2.042$. Como
+\[
+\frac{1/20-1/24}{1/20-1/30}=\frac{1/120}{1/60}=\frac12,
+\]
+se toma el punto medio: $t_{0.975,24}\approx 2.064$ (valor exacto $2.0639$; la interpolación lineal en $\nu$ daría $2.068$). Del mismo modo, entre $\nu=40$ ($1.684$) y $\nu=60$ ($1.671$),
+\[
+t_{0.95,59}\approx 1.684+(1.671-1.684)\,\frac{1/40-1/59}{1/40-1/60}\approx 1.671 .
+\]
+\end{example}
+
+\paragraph{Muchos grados de libertad.}
+\begin{proposition}[Límites de los cuantiles]\label{prop:quantlim}
+\begin{enumerate}[label=(\roman*),leftmargin=2em]
+\item $t_{\gamma,\nu}\to z_{1-\gamma}$ cuando $\nu\to\infty$ (el cuantil normal de orden $\gamma$).
+\item $\bigl(\chi^2_{\gamma,\nu}-\nu\bigr)/\sqrt{2\nu}\to z_{1-\gamma}$ cuando $\nu\to\infty$, es decir $\chi^2_{\gamma,\nu}\approx \nu+z_{1-\gamma}\sqrt{2\nu}$.
+\end{enumerate}
+\end{proposition}
+
+\begin{solution}
+(ii) Si $U_\nu\sim\chi^2_\nu$, entonces $U_\nu=\sum_{i=1}^\nu Z_i^2$ con $\E Z_i^2=1$ y $\Var Z_i^2=2$, y por el TCL $(U_\nu-\nu)/\sqrt{2\nu}\Rightarrow N(0,1)$. Como la función de distribución límite es continua y estrictamente creciente, los cuantiles convergen a los cuantiles del límite.
+(i) Si $T_\nu=Z/\sqrt{U_\nu/\nu}$, la ley de los grandes números da $U_\nu/\nu\to 1$ en probabilidad, y por Slutsky $T_\nu\Rightarrow N(0,1)$; se concluye como en (ii).
+\end{solution}
+
+\begin{remark}[Wilson--Hilferty]
+La aproximación (ii) es burda en la cola: para $\nu=60$, $\gamma=0.95$ da $78.02$ contra el valor exacto $79.08$. Mucho mejor es aproximar $(\chi^2_\nu/\nu)^{1/3}$ por una normal con media $1-\frac{2}{9\nu}$ y varianza $\frac{2}{9\nu}$:
+\[
+\chi^2_{\gamma,\nu}\approx \nu\left(1-\frac{2}{9\nu}+z_{1-\gamma}\sqrt{\frac{2}{9\nu}}\right)^{3}.
+\]
+Con $\nu=29$, $\gamma=0.95$ ($z_{0.05}=1.645$) da $42.55$ (exacto $42.557$); con $\nu=19$, $\gamma=0.025$ da $8.89$ (exacto $8.907$).
+\end{remark}
+
+\begin{remark}[Con hoja de cálculo o lenguaje estadístico]
+Las mismas cantidades se obtienen sin tabla:
+\begin{center}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lllll}
+\toprule
+Cantidad & Excel (inglés) & Excel (español) & R & Python (\texttt{scipy.stats}) \\
+\midrule
+$t_{\gamma,\nu}$ & \texttt{T.INV($\gamma$,$\nu$)} & \texttt{INV.T($\gamma$;$\nu$)} & \texttt{qt($\gamma$,$\nu$)} & \texttt{t.ppf($\gamma$,$\nu$)} \\
+$\chi^2_{\gamma,\nu}$ & \texttt{CHISQ.INV($\gamma$,$\nu$)} & \texttt{INV.CHICUAD($\gamma$;$\nu$)} & \texttt{qchisq($\gamma$,$\nu$)} & \texttt{chi2.ppf($\gamma$,$\nu$)} \\
+$z$ de orden $\gamma$ & \texttt{NORM.S.INV($\gamma$)} & \texttt{INV.NORM.ESTAND($\gamma$)} & \texttt{qnorm($\gamma$)} & \texttt{norm.ppf($\gamma$)} \\
+$\Pbb(t_\nu\ge t)$ & \texttt{T.DIST.RT($t$,$\nu$)} & \texttt{DISTR.T.CD($t$;$\nu$)} & \texttt{1-pt($t$,$\nu$)} & \texttt{t.sf($t$,$\nu$)} \\
+$\Pbb(\chi^2_\nu\ge q)$ & \texttt{CHISQ.DIST.RT($q$,$\nu$)} & \texttt{DISTR.CHICUAD.CD($q$;$\nu$)} & \texttt{1-pchisq($q$,$\nu$)} & \texttt{chi2.sf($q$,$\nu$)} \\
+\bottomrule
+\end{tabular}
+\end{center}
+Por ejemplo, \texttt{T.INV(0.975,19)} devuelve $2.093$ y \texttt{CHISQ.INV(0.025,19)} devuelve $8.907$.
+\end{remark}
+
+\subsection{Ejemplos resueltos de IC}
 
 \begin{example}[IC para media de retornos (finanzas)]
 Con retornos $R_1,\dots,R_n$ y suponer normalidad, un IC $95\%$ para $\mu$ es
@@ -822,7 +1053,88 @@ No rechazar equivale a $\abs{T}<t_{1-\alpha/2,n-1}$, es decir
 Esto es exactamente ``$\mu_0$ cae dentro del IC''.
 \end{solution}
 
-\subsection{Ejemplos resueltos de pruebas, incluyendo finanzas}
+\subsection{Pruebas para dos muestras y para varianzas}
+
+\begin{definition}[Distribución $F$]
+Si $U\sim\chi^2_{d_1}$ y $V\sim\chi^2_{d_2}$ son independientes, $\dfrac{U/d_1}{V/d_2}\sim F_{d_1,d_2}$. Su cuantil $F_{\gamma,d_1,d_2}$ cumple $\Pbb(F_{d_1,d_2}\le F_{\gamma,d_1,d_2})=\gamma$.
+\end{definition}
+
+\begin{proposition}[Pivotes de dos muestras]\label{prop:twosample}
+Sean $X_1,\dots,X_{n_1}\sim N(\mu_1,\sigma_1^2)$ y $Y_1,\dots,Y_{n_2}\sim N(\mu_2,\sigma_2^2)$ muestras independientes, con varianzas muestrales $S_1^2,S_2^2$.
+\begin{enumerate}[label=(\alph*),leftmargin=2em]
+\item Si $\sigma_1=\sigma_2$, con $S_p^2=\dfrac{(n_1-1)S_1^2+(n_2-1)S_2^2}{n_1+n_2-2}$,
+\[
+T=\frac{(\Xbar-\Ybar)-(\mu_1-\mu_2)}{S_p\sqrt{1/n_1+1/n_2}}\sim t_{n_1+n_2-2}.
+\]
+\item $\dfrac{S_1^2/\sigma_1^2}{S_2^2/\sigma_2^2}\sim F_{n_1-1,\,n_2-1}$, y $F_{\gamma,d_1,d_2}=1/F_{1-\gamma,d_2,d_1}$.
+\item Si los datos vienen en pares $(X_i,Y_i)$ y $D_i=X_i-Y_i\sim N(\mu_D,\sigma_D^2)$ i.i.d., entonces $(\overline D-\mu_D)/(S_D/\sqrt n)\sim t_{n-1}$.
+\end{enumerate}
+\end{proposition}
+
+\begin{solution}
+(a) Con $\sigma=\sigma_1=\sigma_2$, $\Xbar-\Ybar\sim N\bigl(\mu_1-\mu_2,\sigma^2(1/n_1+1/n_2)\bigr)$, de modo que $Z=\dfrac{(\Xbar-\Ybar)-(\mu_1-\mu_2)}{\sigma\sqrt{1/n_1+1/n_2}}\sim N(0,1)$. Además $(n_1-1)S_1^2/\sigma^2\sim\chi^2_{n_1-1}$ y $(n_2-1)S_2^2/\sigma^2\sim\chi^2_{n_2-1}$ son independientes (vienen de muestras independientes), luego su suma $U=(n_1+n_2-2)S_p^2/\sigma^2\sim\chi^2_{n_1+n_2-2}$. Dentro de cada muestra la media es independiente de la varianza muestral, así que $Z$ y $U$ son independientes, y $T=Z/\sqrt{U/(n_1+n_2-2)}$ es $t_{n_1+n_2-2}$ por definición.
+
+(b) $U=(n_1-1)S_1^2/\sigma_1^2$ y $V=(n_2-1)S_2^2/\sigma_2^2$ son chi-cuadradas independientes con $n_1-1$ y $n_2-1$ grados; el cociente del enunciado es $\frac{U/(n_1-1)}{V/(n_2-1)}$. Si $W\sim F_{d_1,d_2}$ entonces $1/W\sim F_{d_2,d_1}$, y $\Pbb(W\le 1/c)=\Pbb(1/W\ge c)$; tomando $c=F_{1-\gamma,d_2,d_1}$ se obtiene $\Pbb(W\le 1/c)=\gamma$.
+
+(c) Es el pivote $t$ de una muestra aplicado a $D_1,\dots,D_n$.
+\end{solution}
+
+\begin{remark}[Proporciones]
+Si $\widehat p$ es la proporción de éxitos en $n$ ensayos de Bernoulli$(p)$, el TCL da $(\widehat p-p)/\sqrt{p(1-p)/n}\Rightarrow N(0,1)$. Para dos muestras independientes, bajo $H_0:p_1=p_2$ se estima la $p$ común por $\widehat p=(x_1+x_2)/(n_1+n_2)$ y, por Slutsky,
+\[
+\frac{\widehat p_1-\widehat p_2}{\sqrt{\widehat p(1-\widehat p)(1/n_1+1/n_2)}}\Rightarrow N(0,1).
+\]
+ La regla práctica para usar la aproximación es tener al menos $5$ éxitos y $5$ fracasos esperados en cada muestra.
+\end{remark}
+
+\subsection{Tabla de pruebas de hipótesis}\label{subsec:tablapruebas}
+
+La \Cref{tab:pruebas} reúne los estadísticos y la \Cref{tab:rechazo} las regiones de rechazo y los p-values. En cada caso $\theta_0$ es el valor de frontera de $H_0$.
+
+\begin{table}[H]
+\centering\small
+\renewcommand{\arraystretch}{2.05}
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.2cm} >{\raggedright\arraybackslash}p{3.5cm} >{$\displaystyle}c<{$} >{$}c<{$}}
+\toprule
+\textbf{Parámetro} & \textbf{Supuestos} & \text{\textbf{Estadístico}} & \text{\textbf{Ley bajo }}H_0 \\
+\midrule
+$\mu$ & normal, o $n$ grande; $\sigma$ conocida & Z=\frac{\Xbar-\mu_0}{\sigma/\sqrt n} & N(0,1) \\ \addlinespace[5pt]
+$\mu$ & normal; $\sigma$ desconocida & T=\frac{\Xbar-\mu_0}{S/\sqrt n} & t_{n-1} \\ \addlinespace[5pt]
+$\mu_D$ (pareadas) & diferencias normales & T=\frac{\overline D-\delta_0}{S_D/\sqrt n} & t_{n-1} \\ \addlinespace[5pt]
+$p$ & $np_0\ge5$, $n(1-p_0)\ge5$ & Z=\frac{\widehat p-p_0}{\sqrt{p_0(1-p_0)/n}} & \approx N(0,1) \\ \addlinespace[5pt]
+$\sigma^2$ & normal & Q=\frac{(n-1)S^2}{\sigma_0^2} & \chi^2_{n-1} \\ \addlinespace[5pt]
+$\mu_1-\mu_2$ & normales independientes; $\sigma_1,\sigma_2$ conocidas & Z=\frac{\Xbar-\Ybar-\delta_0}{\sqrt{\sigma_1^2/n_1+\sigma_2^2/n_2}} & N(0,1) \\ \addlinespace[5pt]
+$\mu_1-\mu_2$ & normales independientes; $\sigma_1=\sigma_2$ desconocida & T=\frac{\Xbar-\Ybar-\delta_0}{S_p\sqrt{1/n_1+1/n_2}} & t_{n_1+n_2-2} \\ \addlinespace[5pt]
+$p_1-p_2$ & muestras grandes independientes & Z=\frac{\widehat p_1-\widehat p_2}{\sqrt{\widehat p(1-\widehat p)(1/n_1+1/n_2)}} & \approx N(0,1) \\ \addlinespace[5pt]
+$\sigma_1^2/\sigma_2^2$ & normales independientes & F=\frac{S_1^2}{S_2^2} & F_{n_1-1,\,n_2-1} \\ \addlinespace[5pt]
+$\beta_1$ (regresión) & modelo lineal normal & T=\frac{\widehat\beta_1-b_0}{\widehat{\mathrm{se}}(\widehat\beta_1)} & t_{n-2} \\ \addlinespace[5pt]
+\bottomrule
+\end{tabular}
+\caption{Pruebas de hipótesis clásicas. $S_p^2$ es la varianza combinada de la Proposición~\ref{prop:twosample} y $\widehat p=(x_1+x_2)/(n_1+n_2)$.}
+\label{tab:pruebas}
+\end{table}
+
+\begin{table}[H]
+\centering\small
+\renewcommand{\arraystretch}{1.6}
+\begin{tabular}{l >{$}c<{$} >{$}c<{$} >{$}c<{$}}
+\toprule
+& \text{Estadístico } Z & \text{Estadístico } T\ (\nu) & \text{Estadístico } Q\sim\chi^2_\nu \text{ o } F \\
+\midrule
+$H_1:\theta\neq\theta_0$ & |z|\ge z_{\alpha/2} & |t|\ge t_{1-\alpha/2,\nu} & q\le \chi^2_{\alpha/2,\nu}\ \text{o}\ q\ge \chi^2_{1-\alpha/2,\nu} \\
+$H_1:\theta>\theta_0$ & z\ge z_{\alpha} & t\ge t_{1-\alpha,\nu} & q\ge \chi^2_{1-\alpha,\nu} \\
+$H_1:\theta<\theta_0$ & z\le -z_{\alpha} & t\le -t_{1-\alpha,\nu} & q\le \chi^2_{\alpha,\nu} \\
+\midrule
+p-value ($\neq$) & 2\,\Pbb(Z\ge|z|) & 2\,\Pbb(t_\nu\ge|t|) & 2\min\{\Pbb(\chi^2_\nu\le q),\Pbb(\chi^2_\nu\ge q)\} \\
+p-value ($>$) & \Pbb(Z\ge z) & \Pbb(t_\nu\ge t) & \Pbb(\chi^2_\nu\ge q) \\
+p-value ($<$) & \Pbb(Z\le z) & \Pbb(t_\nu\le t) & \Pbb(\chi^2_\nu\le q) \\
+\bottomrule
+\end{tabular}
+\caption{Regiones de rechazo de nivel $\alpha$ y p-values. Para $F$ se usan las mismas reglas que para $\chi^2$ con los cuantiles $F_{\gamma,d_1,d_2}$. Se rechaza $H_0$ exactamente cuando p-value $\le\alpha$.}
+\label{tab:rechazo}
+\end{table}
+
+\subsection{Ejemplos resueltos de pruebas}
 
 \begin{example}[Retorno medio positivo (finanzas)]
 Datos: $n=60$, $\Xbar=0.0005$, $S=0.012$. Prueba $H_0:\mu\le 0$ vs $H_1:\mu>0$ al 5\%.
@@ -854,8 +1166,28 @@ Como
 \[
 0.323<1.671,
 \]
-el estadístico cae en la región de no rechazo. Conclusión económica: el rendimiento medio observado es positivo, pero demasiado pequeño respecto a la volatilidad muestral para sostener una afirmación estadística fuerte de ``alpha positivo'' al 5\%.
+el estadístico cae en la región de no rechazo. El p-value es $\Pbb(t_{59}\ge 0.323)\approx 0.374$, muy lejos de $0.05$. Conclusión económica: el rendimiento medio observado es positivo, pero demasiado pequeño respecto a la volatilidad muestral para sostener una afirmación estadística fuerte de ``alpha positivo'' al 5\%.
 \end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-4,xmax=4,ymax=0.71506,
+  xlabel={$t$},title={Prueba $t$ de cola derecha, $\nu=59$}]
+\addplot[name path=f,domain=-4:4,draw=none] {0.397256*(1+x*x/59)^(-30)};
+\path[name path=ax] (axis cs:-4,0) -- (axis cs:4,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=1.671:4}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=0.3227:4}];
+\addplot[domain=-4:4,MainBlue,thick] {0.397256*(1+x*x/59)^(-30)};
+\draw[dashed,MainRed,thick] (axis cs:1.671,0) -- (axis cs:1.671,0.44493);
+\node[anchor=south west,text=MainRed,font=\small,inner sep=2pt] at (axis cs:1.671,0.44493) {$t_{0.95,59}=1.671$};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:0.3227,0) -- (axis cs:0.3227,0.57602);
+\node[anchor=south,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:0.3227,0.57602) {$T_{obs}=0.323$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La zona roja es la región de rechazo, de área $0.05$; la zona rayada es el p-value, el área a la derecha de $T_{obs}$. El p-value contiene a la región de rechazo y es mucho mayor que $0.05$: no se rechaza.
+
 
 \begin{example}[Volatilidad excede límite (finanzas)]
 Supón normalidad, $n=30$, $S^2=0.000144$ (var diaria). Probar $H_0:\sigma^2\le 0.0001$ vs $H_1:\sigma^2>0.0001$ al 5\%.
@@ -876,28 +1208,27 @@ Pero
 \[
 41.76<42.56.
 \]
-Por tanto, no se rechaza $H_0$. La lectura práctica es fina: la volatilidad observada está cerca del límite, así que aunque no hay evidencia suficiente para declarar incumplimiento estadístico al 5\%, sí hay una señal de vigilancia porque el resultado queda muy próximo al umbral crítico.
+Por tanto, no se rechaza $H_0$; el p-value es $\Pbb(\chi^2_{29}\ge 41.76)\approx 0.059$. La lectura práctica es fina: la volatilidad observada está cerca del límite, así que aunque no hay evidencia suficiente para declarar incumplimiento estadístico al 5\%, sí hay una señal de vigilancia porque el resultado queda muy próximo al umbral crítico.
 \end{solution}
 
 \begin{center}
 \begin{tikzpicture}
-\begin{axis}[width=0.84\textwidth,height=4.5cm,xmin=30,xmax=48,ymin=0,ymax=1.05,
-axis x line=bottom,axis y line=none,ytick=\empty,
-xlabel={Estadístico $\chi^2$},title={Región de rechazo para la prueba sobre $\sigma^2$}]
-\addplot[name path=A, draw=none] coordinates {(42.56,0.22) (48,0.22)};
-\addplot[name path=B, draw=none] coordinates {(42.56,0.78) (48,0.78)};
-\addplot[SoftRed] fill between[of=A and B];
-\addplot[MainBlue,line width=1.6pt] coordinates {(30,0.5) (48,0.5)};
-\addplot[dashed, MainRed, line width=1.3pt] coordinates {(42.56,0.12) (42.56,0.9)};
-\addplot[dashed, MainGreen!80!black, line width=1.3pt] coordinates {(41.76,0.12) (41.76,0.9)};
-\node[text=MainGreen!80!black] at (axis cs:41.76,0.92) {$Q_{obs}=41.76$};
-\node[text=MainRed] at (axis cs:42.56,0.92) {$\chi^2_{0.95,29}$};
-\node[text=MainRed] at (axis cs:45.3,0.64) {rechazo};
+\begin{axis}[dens,xmin=8,xmax=62,ymax=0.09712,
+  xlabel={$q$},title={Prueba $\chi^2$ de cola derecha, $\nu=29$}]
+\addplot[name path=f,domain=8:62,draw=none] {exp(13.5*ln(x)-x/2-33.913400)};
+\path[name path=ax] (axis cs:8,0) -- (axis cs:62,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=42.557:62}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=41.76:62}];
+\addplot[domain=8:62,MainBlue,thick] {exp(13.5*ln(x)-x/2-33.913400)};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:41.76,0) -- (axis cs:41.76,0.07823);
+\node[anchor=south east,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:41.76,0.07823) {$Q_{obs}=41.76$};
+\draw[dashed,MainRed,thick] (axis cs:42.557,0) -- (axis cs:42.557,0.07823);
+\node[anchor=south west,text=MainRed,font=\small,inner sep=2pt] at (axis cs:42.557,0.07823) {$\chi^2_{0.95,29}=42.56$};
 \end{axis}
 \end{tikzpicture}
 \end{center}
 
-\noindent\textit{Explicación de la figura.} La zona roja representa la región de rechazo en la cola derecha: allí caerían valores de volatilidad muestral suficientemente grandes para concluir que el límite fue rebasado. Como $Q_{obs}=41.76$ queda apenas antes del umbral, la evidencia es cercana pero todavía insuficiente al 5\%.
+\noindent\textit{Explicación de la figura.} La curva es la densidad de $\chi^2_{29}$. La zona roja representa la región de rechazo en la cola derecha: allí caerían valores de volatilidad muestral suficientemente grandes para concluir que el límite fue rebasado. Como $Q_{obs}=41.76$ queda apenas antes del umbral, la evidencia es cercana pero todavía insuficiente al 5\%.
 
 \begin{example}[p-value bilateral en $t$-test]
 Supón $n=20$ y $t_{\text{obs}}=2.1$ en una prueba bilateral sobre $\mu$. ¿p-value aproximado?
@@ -914,10 +1245,35 @@ t_{0.975,19}\approx 2.093.
 \]
 Como el estadístico observado $2.1$ está apenas por encima de ese cuantil, el área de cola bilateral es apenas menor que $0.05$. Por ello,
 \[
-p\approx 0.049\text{--}0.050.
+p\approx 0.049\text{--}0.050
+\qquad(\text{valor exacto } 0.0493).
 \]
 Interpretación ejecutiva: el resultado es marginalmente significativo. En aplicaciones business, eso sugiere prudencia: una conclusión ``significativa'' existe, pero no es robusta ni holgada.
 \end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-4.5,xmax=4.5,ymax=0.70871,
+  xlabel={$t$},title={p-value bilateral, $\nu=19$}]
+\addplot[name path=f,domain=-4.5:4.5,draw=none] {0.393730*(1+x*x/19)^(-10)};
+\path[name path=ax] (axis cs:-4.5,0) -- (axis cs:4.5,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=-4.5:-2.093}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=2.093:4.5}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=-4.5:-2.1}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=2.1:4.5}];
+\addplot[domain=-4.5:4.5,MainBlue,thick] {0.393730*(1+x*x/19)^(-10)};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:-2.1,0) -- (axis cs:-2.1,0.44098);
+\node[anchor=south east,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:-2.1,0.44098) {$-t_{obs}$};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:2.1,0) -- (axis cs:2.1,0.44098);
+\node[anchor=south west,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:2.1,0.44098) {$t_{obs}=2.1$};
+\draw[dashed,MainRed,thick] (axis cs:2.093,0) -- (axis cs:2.093,0.57091);
+\node[anchor=south west,text=MainRed,font=\small,inner sep=2pt] at (axis cs:2.093,0.57091) {$t_{0.975,19}=2.093$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} El p-value bilateral es la suma de las dos colas rayadas, más allá de $\pm 2.1$. Como $2.1$ apenas rebasa $t_{0.975,19}=2.093$, las colas rayadas son apenas más chicas que las rojas, de área total $0.05$.
+
 
 \begin{example}[Proporción de días positivos supera 0.5]
 En $n=200$ días, el activo cerró con retorno positivo en 118 días. Probar $H_0:p\le 0.5$ vs $H_1:p>0.5$ al 5\% usando aproximación normal.
@@ -942,28 +1298,328 @@ La regla de decisión es:
 \[
 \text{rechazar }H_0 \iff W\ge 1.645.
 \]
-Como $2.545>1.645$, rechazamos $H_0$. Lectura business: la estrategia tuvo días positivos en una fracción suficientemente alta como para sostener, estadísticamente, que la probabilidad de ``ganar el día'' supera el 50\%.
+Como $2.545>1.645$, rechazamos $H_0$; el p-value es $\Pbb(Z\ge 2.545)\approx 0.0055$. Lectura business: la estrategia tuvo días positivos en una fracción suficientemente alta como para sostener, estadísticamente, que la probabilidad de ``ganar el día'' supera el 50\%.
 \end{solution}
 
 \begin{center}
 \begin{tikzpicture}
-\begin{axis}[width=0.84\textwidth,height=4.5cm,xmin=-0.5,xmax=3.1,ymin=0,ymax=1.05,
-axis x line=bottom,axis y line=none,ytick=\empty,
-xlabel={Estadístico $z$},title={Región de rechazo para la prueba sobre proporción}]
-\addplot[name path=A, draw=none] coordinates {(1.645,0.22) (3.1,0.22)};
-\addplot[name path=B, draw=none] coordinates {(1.645,0.78) (3.1,0.78)};
-\addplot[SoftRed] fill between[of=A and B];
-\addplot[MainBlue,line width=1.6pt] coordinates {(-0.5,0.5) (3.1,0.5)};
-\addplot[dashed, MainRed, line width=1.3pt] coordinates {(1.645,0.12) (1.645,0.9)};
-\addplot[dashed, MainGreen!80!black, line width=1.3pt] coordinates {(2.545,0.12) (2.545,0.9)};
-\node[text=MainRed] at (axis cs:1.645,0.92) {$z_{crit}=1.645$};
-\node[text=MainGreen!80!black] at (axis cs:2.545,0.92) {$z_{obs}=2.545$};
-\node[text=MainRed] at (axis cs:2.5,0.64) {rechazo};
+\begin{axis}[dens,xmin=-3.5,xmax=3.8,ymax=0.71810,
+  xlabel={$z$},title={Prueba $z$ de cola derecha}]
+\addplot[name path=f,domain=-3.5:3.8,draw=none] {0.398942*exp(-0.5*x*x)};
+\path[name path=ax] (axis cs:-3.5,0) -- (axis cs:3.8,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=1.645:3.8}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=2.5456:3.8}];
+\addplot[domain=-3.5:3.8,MainBlue,thick] {0.398942*exp(-0.5*x*x)};
+\draw[dashed,MainRed,thick] (axis cs:1.645,0) -- (axis cs:1.645,0.44682);
+\node[anchor=south east,text=MainRed,font=\small,inner sep=2pt] at (axis cs:1.645,0.44682) {$z_{0.05}=1.645$};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:2.5456,0) -- (axis cs:2.5456,0.57847);
+\node[anchor=south west,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:2.5456,0.57847) {$z_{obs}=2.545$};
 \end{axis}
 \end{tikzpicture}
 \end{center}
 
 \noindent\textit{Explicación de la figura.} Aquí el estadístico observado sí entra en la franja roja. Eso visualiza por qué se rechaza $H_0$: la proporción observada de días positivos es lo bastante grande como para quedar dentro de la región crítica unilateral.
+
+\begin{example}[Llenado de botellas: prueba $z$ bilateral]\label{ex:botellas}
+Una máquina llena botellas con contenido nominal de $500$ ml; por su historial, $\sigma=4$ ml. Una muestra de $n=25$ botellas da $\Xbar=498.2$. ¿Está descalibrada la máquina? Usa $\alpha=0.05$.
+\end{example}
+
+\begin{solution}
+Se descalibra hacia arriba o hacia abajo, así que la alternativa es bilateral: $H_0:\mu=500$ vs $H_1:\mu\neq500$. Como $\sigma$ es conocida,
+\[
+Z=\frac{\Xbar-\mu_0}{\sigma/\sqrt n}=\frac{498.2-500}{4/5}=\frac{-1.8}{0.8}=-2.25 .
+\]
+La frontera es $z_{0.025}=1.96$ y $|Z|=2.25\ge1.96$: se rechaza $H_0$. El p-value es $2\,\Pbb(Z\ge2.25)\approx 0.0244$. La máquina está llenando de menos y conviene recalibrarla.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-3.8,xmax=3.8,ymax=0.71810,
+  xlabel={$z$},title={Prueba $z$ bilateral, $\alpha=0.05$}]
+\addplot[name path=f,domain=-3.8:3.8,draw=none] {0.398942*exp(-0.5*x*x)};
+\path[name path=ax] (axis cs:-3.8,0) -- (axis cs:3.8,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=-3.8:-1.96}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=1.96:3.8}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=-3.8:-2.25}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=2.25:3.8}];
+\addplot[domain=-3.8:3.8,MainBlue,thick] {0.398942*exp(-0.5*x*x)};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:-2.25,0) -- (axis cs:-2.25,0.57847);
+\node[anchor=south east,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:-2.25,0.57847) {$z_{obs}=-2.25$};
+\draw[dashed,MainRed,thick] (axis cs:-1.96,0) -- (axis cs:-1.96,0.44682);
+\node[anchor=south west,text=MainRed,font=\small,inner sep=2pt] at (axis cs:-1.96,0.44682) {$-1.96$};
+\draw[dashed,MainRed,thick] (axis cs:1.96,0) -- (axis cs:1.96,0.44682);
+\node[anchor=south west,text=MainRed,font=\small,inner sep=2pt] at (axis cs:1.96,0.44682) {$1.96$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} Las dos colas rojas suman $0.05$. El estadístico observado cae en la cola izquierda; el p-value (rayado) cuenta también la cola simétrica de la derecha porque la alternativa es bilateral.
+
+\begin{example}[Duración de baterías: prueba $t$ de cola izquierda]
+Un fabricante afirma que sus baterías duran en promedio al menos $40$ horas. En $n=16$ baterías se mide $\Xbar=38.5$ h y $S=2.8$ h. Suponiendo normalidad, ¿hay evidencia al $5\%$ contra la afirmación?
+\end{example}
+
+\begin{solution}
+La afirmación del fabricante va en la nula: $H_0:\mu\ge40$ vs $H_1:\mu<40$. Con $\sigma$ desconocida,
+\[
+T=\frac{38.5-40}{2.8/\sqrt{16}}=\frac{-1.5}{0.7}\approx-2.143,\qquad \nu=15 .
+\]
+Es una prueba de cola izquierda, así que por la Proposición~\ref{prop:tsym} la frontera es $t_{0.05,15}=-t_{0.95,15}=-1.753$ (\Cref{tab:t}). Como $-2.143\le-1.753$, se rechaza $H_0$, con p-value $\Pbb(t_{15}\le-2.143)\approx0.0245$. Los datos contradicen la duración anunciada.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-4.5,xmax=4.5,ymax=0.70624,
+  xlabel={$t$},title={Prueba $t$ de cola izquierda, $\nu=15$}]
+\addplot[name path=f,domain=-4.5:4.5,draw=none] {0.392353*(1+x*x/15)^(-8)};
+\path[name path=ax] (axis cs:-4.5,0) -- (axis cs:4.5,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=-4.5:-1.753}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=-4.5:-2.1429}];
+\addplot[domain=-4.5:4.5,MainBlue,thick] {0.392353*(1+x*x/15)^(-8)};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:-2.1429,0) -- (axis cs:-2.1429,0.56891);
+\node[anchor=south east,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:-2.1429,0.56891) {$T_{obs}=-2.143$};
+\draw[dashed,MainRed,thick] (axis cs:-1.753,0) -- (axis cs:-1.753,0.43944);
+\node[anchor=south west,text=MainRed,font=\small,inner sep=2pt] at (axis cs:-1.753,0.43944) {$t_{0.05,15}=-1.753$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} En una alternativa ``menor que'' la región de rechazo vive a la izquierda. El estadístico cae dentro de ella y el p-value rayado es menor que $0.05$.
+
+\begin{example}[Datos pareados: presión arterial antes y después]
+Ocho personas siguen un programa de ejercicio. Su presión sistólica (mmHg) antes y después es:
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{l|cccccccc}
+\toprule
+Persona & 1 & 2 & 3 & 4 & 5 & 6 & 7 & 8 \\
+\midrule
+Antes & 142 & 138 & 150 & 145 & 160 & 155 & 148 & 152 \\
+Después & 136 & 135 & 144 & 146 & 151 & 149 & 145 & 147 \\
+$D=$ antes $-$ después & 6 & 3 & 6 & $-1$ & 9 & 6 & 3 & 5 \\
+\bottomrule
+\end{tabular}
+\end{center}
+¿Baja la presión media? Usa $\alpha=0.05$.
+\end{example}
+
+\begin{solution}
+Cada persona es su propio control, así que se trabaja con las diferencias $D_i$ (Proposición~\ref{prop:twosample}(c)): $H_0:\mu_D\le0$ vs $H_1:\mu_D>0$. Con los datos,
+\[
+\overline D=\frac{37}{8}=4.625,\qquad
+S_D^2=\frac{1}{7}\sum_{i=1}^8(D_i-\overline D)^2=\frac{61.875}{7}\approx8.839,\qquad S_D\approx2.973,
+\]
+\[
+T=\frac{\overline D}{S_D/\sqrt8}=\frac{4.625}{1.051}\approx4.400,\qquad \nu=7 .
+\]
+La frontera es $t_{0.95,7}=1.895$, así que se rechaza $H_0$ con holgura; el p-value es $\Pbb(t_7\ge4.400)\approx0.0016$.
+
+Tratar las columnas ``antes'' y ``después'' como dos muestras independientes sería un error: la variación entre personas (de $138$ a $160$) es mucho mayor que el efecto del programa y lo taparía. El emparejamiento elimina esa variación.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-4.5,xmax=5.2,ymax=0.69298,
+  xlabel={$t$},title={Prueba $t$ pareada, $\nu=7$}]
+\addplot[name path=f,domain=-4.5:5.2,draw=none] {0.384991*(1+x*x/7)^(-4)};
+\path[name path=ax] (axis cs:-4.5,0) -- (axis cs:5.2,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=1.895:5.2}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=4.4:5.2}];
+\addplot[domain=-4.5:5.2,MainBlue,thick] {0.384991*(1+x*x/7)^(-4)};
+\draw[dashed,MainRed,thick] (axis cs:1.895,0) -- (axis cs:1.895,0.43119);
+\node[anchor=south east,text=MainRed,font=\small,inner sep=2pt] at (axis cs:1.895,0.43119) {$t_{0.95,7}=1.895$};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:4.4,0) -- (axis cs:4.4,0.43119);
+\node[anchor=south,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:4.4,0.43119) {$T_{obs}=4.40$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} El estadístico queda muy dentro de la región de rechazo; el p-value es la diminuta área rayada a su derecha.
+
+\begin{example}[Dos grupos: prueba $t$ con varianza combinada]\label{ex:pooled}
+Dos métodos de enseñanza se comparan con un mismo examen. Grupo A: $n_1=12$, $\Xbar=24.6$, $S_1=3.1$. Grupo B: $n_2=10$, $\Ybar=21.9$, $S_2=2.7$. Suponiendo normalidad y varianzas iguales (lo verifica el Ejemplo~\ref{ex:F}), ¿difieren las medias al $5\%$?
+\end{example}
+
+\begin{solution}
+$H_0:\mu_1=\mu_2$ vs $H_1:\mu_1\neq\mu_2$. La varianza combinada es
+\[
+S_p^2=\frac{11\cdot3.1^2+9\cdot2.7^2}{20}=\frac{105.71+65.61}{20}=8.566,\qquad S_p\approx2.927,
+\]
+y el estadístico
+\[
+T=\frac{24.6-21.9}{2.927\sqrt{1/12+1/10}}=\frac{2.7}{1.253}\approx2.155,\qquad \nu=12+10-2=20 .
+\]
+La frontera es $t_{0.975,20}=2.086$ y $2.155\ge2.086$: se rechaza $H_0$, con p-value $2\,\Pbb(t_{20}\ge2.155)\approx0.044$. El método A da mejores resultados, aunque la evidencia no es holgada.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-4.5,xmax=4.5,ymax=0.70918,
+  xlabel={$t$},title={Prueba $t$ de dos muestras, $\nu=20$}]
+\addplot[name path=f,domain=-4.5:4.5,draw=none] {0.393989*(1+x*x/20)^(-10.5)};
+\path[name path=ax] (axis cs:-4.5,0) -- (axis cs:4.5,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=-4.5:-2.086}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=2.086:4.5}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=-4.5:-2.1545}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=2.1545:4.5}];
+\addplot[domain=-4.5:4.5,MainBlue,thick] {0.393989*(1+x*x/20)^(-10.5)};
+\draw[dashed,MainRed,thick] (axis cs:-2.086,0) -- (axis cs:-2.086,0.44127);
+\node[anchor=south east,text=MainRed,font=\small,inner sep=2pt] at (axis cs:-2.086,0.44127) {$-2.086$};
+\draw[dashed,MainRed,thick] (axis cs:2.086,0) -- (axis cs:2.086,0.44127);
+\node[anchor=south east,text=MainRed,font=\small,inner sep=2pt] at (axis cs:2.086,0.44127) {$t_{0.975,20}=2.086$};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:2.1545,0) -- (axis cs:2.1545,0.57128);
+\node[anchor=south west,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:2.1545,0.57128) {$T_{obs}=2.155$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} El estadístico apenas rebasa la frontera derecha. El p-value suma las dos colas rayadas y queda poco por debajo de $0.05$.
+
+\begin{example}[Igualdad de varianzas: prueba $F$]\label{ex:F}
+Con los datos del Ejemplo~\ref{ex:pooled}, prueba $H_0:\sigma_1^2=\sigma_2^2$ vs $H_1:\sigma_1^2\neq\sigma_2^2$ al $5\%$.
+\end{example}
+
+\begin{solution}
+Por la Proposición~\ref{prop:twosample}(b), bajo $H_0$ el cociente $F=S_1^2/S_2^2$ sigue una $F_{11,9}$. Aquí
+\[
+F=\frac{3.1^2}{2.7^2}=\frac{9.61}{7.29}\approx1.318 .
+\]
+Las fronteras son $F_{0.975,11,9}=3.912$ y, con la identidad de reciprocidad, $F_{0.025,11,9}=1/F_{0.975,9,11}=1/3.588=0.279$. Como $0.279<1.318<3.912$, no se rechaza $H_0$ (p-value $\approx0.69$): el supuesto de varianzas iguales del ejemplo anterior es razonable.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=0.02,xmax=5.5,ymax=1.34628,
+  xlabel={$f$},title={Prueba $F$ bilateral, $F_{11,9}$}]
+\addplot[name path=f,domain=0.02:5.5,draw=none] {exp(7.493966+4.5*ln(x)-10*ln(1+11*x/9))};
+\path[name path=ax] (axis cs:0.02,0) -- (axis cs:5.5,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=0.02:0.2787}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=3.912:5.5}];
+\addplot[domain=0.02:5.5,MainBlue,thick] {exp(7.493966+4.5*ln(x)-10*ln(1+11*x/9))};
+\draw[dashed,MainRed,thick] (axis cs:0.2787,0) -- (axis cs:0.2787,1.08450);
+\node[anchor=south east,text=MainRed,font=\small,inner sep=2pt] at (axis cs:0.2787,1.08450) {$0.279$};
+\draw[dashed,MainRed,thick] (axis cs:3.912,0) -- (axis cs:3.912,0.83769);
+\node[anchor=south,text=MainRed,font=\small,inner sep=2pt] at (axis cs:3.912,0.83769) {$F_{0.975,11,9}=3.912$};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:1.3182,0) -- (axis cs:1.3182,1.08450);
+\node[anchor=south west,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:1.3182,1.08450) {$F_{obs}=1.318$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} Como la $\chi^2$, la $F$ es asimétrica: la cola izquierda de área $0.025$ termina en $0.279$ y la derecha empieza en $3.912$. El valor observado cae en la zona central.
+
+\begin{example}[Precisión de una máquina: prueba $\chi^2$ bilateral]
+Una pieza debe fabricarse con varianza de diámetro $\sigma^2=0.25$ mm$^2$. En $n=20$ piezas se obtiene $S^2=0.41$. Suponiendo normalidad, ¿difiere la varianza de la especificación al $5\%$?
+\end{example}
+
+\begin{solution}
+$H_0:\sigma^2=0.25$ vs $H_1:\sigma^2\neq0.25$. El estadístico es
+\[
+Q=\frac{(n-1)S^2}{\sigma_0^2}=\frac{19\cdot0.41}{0.25}=31.16,\qquad \nu=19 .
+\]
+Por ser bilateral se buscan dos cuantiles en la \Cref{tab:chi2}: $\chi^2_{0.025,19}=8.907$ y $\chi^2_{0.975,19}=32.852$. Como $8.907<31.16<32.852$, no se rechaza $H_0$. El p-value es $2\min\{\Pbb(\chi^2_{19}\le31.16),\Pbb(\chi^2_{19}\ge31.16)\}=2\cdot0.039\approx0.078$.
+
+Si la pregunta hubiera sido ``¿\emph{excede} la varianza la especificación?'' ($H_1:\sigma^2>0.25$), la frontera sería $\chi^2_{0.95,19}=30.144$ y se rechazaría (p-value $\approx0.039$). La alternativa debe fijarse antes de ver los datos; elegirla después para conseguir significancia invalida el nivel.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=0.3,xmax=45,ymax=0.12195,
+  xlabel={$q$},title={Prueba $\chi^2$ bilateral, $\nu=19$}]
+\addplot[name path=f,domain=0.3:45,draw=none] {exp(8.5*ln(x)-x/2-18.274232)};
+\path[name path=ax] (axis cs:0.3,0) -- (axis cs:45,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=0.3:8.907}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=32.852:45}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=31.16:45}];
+\addplot[domain=0.3:45,MainBlue,thick] {exp(8.5*ln(x)-x/2-18.274232)};
+\draw[dashed,MainRed,thick] (axis cs:8.907,0) -- (axis cs:8.907,0.09824);
+\node[anchor=south,text=MainRed,font=\small,inner sep=2pt] at (axis cs:8.907,0.09824) {$\chi^2_{0.025,19}=8.907$};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:31.16,0) -- (axis cs:31.16,0.07588);
+\node[anchor=south east,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:31.16,0.07588) {$Q_{obs}=31.16$};
+\draw[dashed,MainRed,thick] (axis cs:32.852,0) -- (axis cs:32.852,0.09824);
+\node[anchor=south west,text=MainRed,font=\small,inner sep=2pt] at (axis cs:32.852,0.09824) {$\chi^2_{0.975,19}=32.852$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} El estadístico queda justo antes de la frontera derecha. El área rayada a su derecha es la mitad del p-value bilateral.
+
+\begin{example}[Comparar dos proporciones]
+Dos versiones de una página web se muestran a $250$ visitantes cada una. La versión A logra $46$ compras y la B, $30$. ¿Difieren las tasas de conversión al $5\%$?
+\end{example}
+
+\begin{solution}
+$H_0:p_1=p_2$ vs $H_1:p_1\neq p_2$. Se tiene $\widehat p_1=46/250=0.184$, $\widehat p_2=30/250=0.120$ y la proporción combinada $\widehat p=76/500=0.152$. Entonces
+\[
+Z=\frac{0.184-0.120}{\sqrt{0.152\cdot0.848\,(2/250)}}=\frac{0.064}{0.0321}\approx1.993 .
+\]
+Como $|Z|\ge1.96$, se rechaza $H_0$, pero por muy poco: el p-value es $2\,\Pbb(Z\ge1.993)\approx0.046$. Con un nivel de $1\%$ no se rechazaría.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-3.8,xmax=3.8,ymax=0.71810,
+  xlabel={$z$},title={Prueba $z$ bilateral para $p_1-p_2$}]
+\addplot[name path=f,domain=-3.8:3.8,draw=none] {0.398942*exp(-0.5*x*x)};
+\path[name path=ax] (axis cs:-3.8,0) -- (axis cs:3.8,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=-3.8:-1.96}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=1.96:3.8}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=-3.8:-1.993}];
+\addplot[pattern=north east lines,pattern color=MainOrange] fill between[of=f and ax,soft clip={domain=1.993:3.8}];
+\addplot[domain=-3.8:3.8,MainBlue,thick] {0.398942*exp(-0.5*x*x)};
+\draw[dashed,MainRed,thick] (axis cs:-1.96,0) -- (axis cs:-1.96,0.44682);
+\node[anchor=south east,text=MainRed,font=\small,inner sep=2pt] at (axis cs:-1.96,0.44682) {$-1.96$};
+\draw[dashed,MainRed,thick] (axis cs:1.96,0) -- (axis cs:1.96,0.44682);
+\node[anchor=south east,text=MainRed,font=\small,inner sep=2pt] at (axis cs:1.96,0.44682) {$1.96$};
+\draw[dashed,MainGreen!80!black,thick] (axis cs:1.993,0) -- (axis cs:1.993,0.57847);
+\node[anchor=south west,text=MainGreen!80!black,font=\small,inner sep=2pt] at (axis cs:1.993,0.57847) {$z_{obs}=1.993$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} El estadístico observado está prácticamente sobre la frontera: el área rayada es casi igual a la roja.
+
+\begin{example}[Potencia y error tipo II]
+En el Ejemplo~\ref{ex:botellas} ($\sigma=4$, $n=25$, prueba bilateral al $5\%$), ¿con qué probabilidad detecta la prueba una descalibración real a $\mu=498$? ¿Qué $n$ hace falta para detectarla con probabilidad $0.90$?
+\end{example}
+
+\begin{solution}
+Si la media verdadera es $\mu$, el estadístico $Z=(\Xbar-\mu_0)/(\sigma/\sqrt n)$ sigue una $N(\delta,1)$ con $\delta=(\mu-\mu_0)\sqrt n/\sigma$, porque $\Xbar-\mu_0=(\Xbar-\mu)+(\mu-\mu_0)$. Por tanto la función de potencia es
+\[
+\pi(\mu)=\Pbb_\mu\bigl(|Z|\ge z_{\alpha/2}\bigr)=\Phi\bigl(-z_{\alpha/2}-\delta\bigr)+\Phi\bigl(-z_{\alpha/2}+\delta\bigr).
+\]
+Con $\mu=498$: $\delta=(498-500)\cdot5/4=-2.5$ y
+\[
+\pi(498)=\Phi(0.54)+\Phi(-4.46)\approx0.705+0.000=0.705 .
+\]
+La prueba detecta esa descalibración sólo $70\%$ de las veces; el error tipo II es $\beta=0.295$.
+
+Para potencia $0.90$ se desprecia la cola lejana y se pide $\Phi(-z_{\alpha/2}+|\delta|)\ge0.90$, es decir $|\delta|\ge z_{\alpha/2}+z_{0.10}$:
+\[
+n\ge\left(\frac{(z_{0.025}+z_{0.10})\,\sigma}{|\mu-\mu_0|}\right)^2=\left(\frac{(1.960+1.282)\cdot4}{2}\right)^2\approx42.0,
+\]
+así que bastan $n=43$ botellas.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[dens,xmin=-6,xmax=3.8,ymax=0.71809,
+  xlabel={$z$},title={Potencia de la prueba $z$ en $\mu=498$}]
+\addplot[name path=f,domain=-6:3.8,draw=none] {0.398942*exp(-0.5*x*x)};
+\path[name path=ax] (axis cs:-6,0) -- (axis cs:3.8,0);
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=-6:-1.96}];
+\addplot[SoftRed] fill between[of=f and ax,soft clip={domain=1.96:3.8}];
+\addplot[name path=g,domain=-6:3.8,draw=none] {0.398942*exp(-0.5*(x+2.5)*(x+2.5))};\addplot[SoftGreen,opacity=0.85] fill between[of=g and ax,soft clip={domain=-6:-1.96}];\addplot[domain=-6:3.8,MainGreen!80!black,thick] {0.398942*exp(-0.5*(x+2.5)*(x+2.5))};\node[font=\small,text=MainGreen!80!black] at (axis cs:-3.6,0.47) {$N(-2.5,1)$: $\mu=498$};\node[font=\small,text=MainBlue] at (axis cs:1.2,0.47) {$N(0,1)$: $H_0$};\node[font=\small,text=MainGreen!80!black] at (axis cs:-3.2,0.12) {$0.705$};
+\addplot[domain=-6:3.8,MainBlue,thick] {0.398942*exp(-0.5*x*x)};
+\draw[dashed,MainRed,thick] (axis cs:-1.96,0) -- (axis cs:-1.96,0.51862);
+\node[anchor=south,text=MainRed,font=\small,inner sep=2pt] at (axis cs:-1.96,0.51862) {$-1.96$};
+\draw[dashed,MainRed,thick] (axis cs:1.96,0) -- (axis cs:1.96,0.51862);
+\node[anchor=south,text=MainRed,font=\small,inner sep=2pt] at (axis cs:1.96,0.51862) {$1.96$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La curva azul es la ley del estadístico si $H_0$ es cierta; la verde, si $\mu=498$. La región de rechazo es la misma para las dos (fronteras $\pm1.96$). Bajo $H_0$ tiene probabilidad $0.05$ (zonas rojas); bajo $\mu=498$ tiene probabilidad $0.705$ (zona verde), que es la potencia.
 
 %================================================
 \section{Regresión lineal: mínimos cuadrados, propiedades, inferencia}
