@@ -1,0 +1,645 @@
+\documentclass[11pt,a4paper,oneside]{article}
+
+% -------------------------------------------------
+% Basic packages
+% -------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish,es-noquoting,es-nodecimaldot]{babel}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage[a4paper,margin=1.18in,headheight=15pt]{geometry}
+\usepackage{amsmath,amssymb,amsfonts,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage[most]{tcolorbox}
+\usepackage[capitalize,noabbrev]{cleveref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=red!55!black,
+  urlcolor=teal!60!black,
+  pdftitle={Probabilidad y Estadística para Negocios -- Ejercicios estilo CFA},
+  pdfauthor={César Galindo}
+}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definición}[section]
+\newtheorem{example}[definition]{Ejemplo}
+
+\definecolor{ihesblue}{RGB}{25,62,114}
+\definecolor{ihesgold}{RGB}{160,120,40}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\textsc{Probabilidad y Estadística para Negocios}}
+\fancyhead[R]{\textsc{César Galindo}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.35pt}
+\renewcommand{\footrulewidth}{0pt}
+\titleformat{\section}{\Large\bfseries\color{ihesblue}}{\thesection.}{0.65em}{}
+\titleformat{\subsection}{\large\bfseries\color{ihesblue}}{\thesubsection.}{0.65em}{}
+\titlespacing*{\section}{0pt}{1.9em}{1.05em}
+\titlespacing*{\subsection}{0pt}{1.45em}{0.95em}
+\tcbset{colback=white,colframe=ihesblue!65!black,boxrule=0.5pt,arc=1.5pt}
+\setlength{\parskip}{0.85em}
+\setstretch{1.13}
+\setlength{\parindent}{0pt}
+
+\newtcolorbox{ideaBox}[1][]{enhanced,breakable,colback=blue!2,colframe=ihesblue,
+  borderline west={1.5pt}{0pt}{ihesblue},title=Idea central,fonttitle=\bfseries,#1}
+\newtcolorbox{summaryBox}[1][]{enhanced,breakable,colback=gray!4,colframe=black!55,
+  borderline west={1.5pt}{0pt}{black!70},title=Fórmulas clave,fonttitle=\bfseries,#1}
+\newtcolorbox{warningBox}[1][]{enhanced,breakable,colback=red!2,colframe=red!55!black,
+  borderline west={1.5pt}{0pt}{red!75!black},title=Error frecuente,fonttitle=\bfseries,#1}
+\newtcolorbox{cfaBox}[1][]{enhanced,breakable,
+  colback=violet!3!white,colframe=violet!50!black,
+  borderline west={2pt}{0pt}{violet!65!black},
+  title=Ejercicio estilo CFA,fonttitle=\bfseries\color{violet!80!black},
+  attach boxed title to top left={yshift=-2mm,xshift=4mm},
+  boxed title style={colback=violet!12,colframe=violet!50!black,boxrule=0.5pt},#1}
+\newtcolorbox{solBox}[1][]{enhanced,breakable,
+  colback=green!2!white,colframe=green!45!black,
+  borderline west={2pt}{0pt}{green!55!black},
+  title=Solución,fonttitle=\bfseries\color{green!40!black},
+  attach boxed title to top left={yshift=-2mm,xshift=4mm},
+  boxed title style={colback=green!10,colframe=green!45!black,boxrule=0.5pt},#1}
+
+\title{\vspace{-1.5cm}\textbf{\Large Probabilidad y Estadística para Negocios}\\[2pt]\large Ejercicios estilo CFA}
+\author{César Galindo\\ \small Universidad Panamericana \textperiodcentered\ Facultad de Empresariales, Ciudad UP}
+\date{\small}
+
+\begin{document}
+\maketitle
+
+\begin{ideaBox}
+Veinte problemas de opción múltiple, en el formato del examen CFA Nivel~I
+(\emph{Quantitative Methods}: probabilidad, valor esperado y varianza,
+covarianza y correlación, riesgo y rendimiento de portafolios,
+distribuciones binomial, uniforme y normal, muestreo, intervalos de
+confianza, prueba de hipótesis, y sesgo/curtosis), aplicados a contextos de
+inversión y finanzas corporativas. Cada uno incluye la solución completa,
+con todos los números verificados numéricamente. Se incluye antes un
+recordatorio breve de las fórmulas usadas.
+\end{ideaBox}
+
+\begin{summaryBox}
+\textbf{Reglas de probabilidad.} Para eventos $A,B$:
+\[
+P(A\cup B) = P(A)+P(B)-P(A\cap B), \qquad P(B\mid A) = \frac{P(A\cap B)}{P(A)}.
+\]
+$A$ y $B$ son independientes si $P(B\mid A)=P(B)$, equivalentemente
+$P(A\cap B)=P(A)P(B)$.
+
+\textbf{Teorema de Bayes.} Si $S_1,\dots,S_n$ son escenarios que cubren
+todos los casos posibles (mutuamente excluyentes y colectivamente
+exhaustivos), y $E$ es un evento observado:
+\[
+P(S_i\mid E) = \frac{P(E\mid S_i)\,P(S_i)}{P(E)}, \qquad\text{con}\qquad
+P(E)=\sum_{j=1}^nP(E\mid S_j)\,P(S_j)\quad\text{(regla de la probabilidad total).}
+\]
+
+\textbf{Valor esperado, varianza y covarianza.} Para una variable aleatoria
+discreta $R$ con escenarios $r_i$ y probabilidades $p_i$:
+\[
+E(R)=\sum_ip_ir_i, \qquad \mathrm{Var}(R)=\sum_ip_i\big(r_i-E(R)\big)^2, \qquad \sigma_R=\sqrt{\mathrm{Var}(R)}.
+\]
+Para dos variables $R_A,R_B$ con los mismos escenarios:
+\[
+\mathrm{Cov}(R_A,R_B)=\sum_ip_i\big(r_{A,i}-E(R_A)\big)\big(r_{B,i}-E(R_B)\big).
+\]
+
+\textbf{Binomial.} Si $X\sim\mathrm{Bin}(n,p)$, $P(X=k)=\binom{n}{k}p^k(1-p)^{n-k}$.
+
+\textbf{Normal estándar.} Si $R\sim N(\mu,\sigma^2)$, entonces
+$Z=(R-\mu)/\sigma\sim N(0,1)$, y $P(R\le r)=\Phi\!\left(\frac{r-\mu}{\sigma}\right)$.
+
+\textbf{Error estándar de la media.} Para una muestra de tamaño $n$ de una
+población con desviación estándar $\sigma$:
+$\mathrm{SE}(\bar X)=\sigma/\sqrt{n}$.
+
+\textbf{Portafolio de dos activos.} Con pesos $w_A+w_B=1$ y correlación
+$\rho_{A,B}$:
+\[
+E(R_p)=w_AE(R_A)+w_BE(R_B), \qquad
+\sigma_p^2=w_A^2\sigma_A^2+w_B^2\sigma_B^2+2w_Aw_B\rho_{A,B}\sigma_A\sigma_B,
+\]
+y el coeficiente de correlación es $\rho_{A,B}=\mathrm{Cov}(R_A,R_B)/(\sigma_A\sigma_B)$.
+
+\textbf{Razón de Sharpe.} $\mathrm{Sharpe}=(E(R)-R_f)/\sigma$: rendimiento
+en exceso de la tasa libre de riesgo, por unidad de riesgo total.
+
+\textbf{Intervalo de confianza para la media.} Con error estándar
+$\mathrm{SE}(\bar X)$ y valor crítico $z_{\alpha/2}$ (o $t_{\alpha/2}$ con
+muestra pequeña y $\sigma$ desconocida):
+$\bar X\pm z_{\alpha/2}\,\mathrm{SE}(\bar X)$.
+
+\textbf{Prueba de hipótesis sobre una media.} Estadístico de prueba
+$=\dfrac{\bar X-\mu_0}{\mathrm{SE}(\bar X)}$; se rechaza $H_0$ si el
+estadístico excede, en valor absoluto, el valor crítico.
+\end{summaryBox}
+
+\begin{warningBox}
+$P(B\mid A)\ne P(A\mid B)$ en general: confundir estas dos probabilidades
+condicionales es el error más común al aplicar el teorema de Bayes (y
+aparece constantemente en preguntas de examen sobre pronósticos de
+analistas: la probabilidad de un ``profit warning'' dado que hay recesión
+\emph{no es} la probabilidad de recesión dado que hay un profit warning).
+\end{warningBox}
+
+\section{Probabilidad condicional e independencia}
+
+\begin{cfaBox}
+Un analista estima que la probabilidad de que la economía crezca el próximo
+trimestre es $P(A)=0.40$, que una empresa determinada supere las
+expectativas de utilidades es $P(B)=0.30$, y que ambos eventos ocurran
+simultáneamente es $P(A\cap B)=0.15$. ¿Cuál es $P(B\mid A)$, y son $A$ y
+$B$ independientes?
+\begin{enumerate}[label=\Alph*.]
+\item $P(B\mid A)=0.300$; sí son independientes.
+\item $P(B\mid A)=0.375$; no son independientes.
+\item $P(B\mid A)=0.150$; no son independientes.
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} $P(B\mid A)=P(A\cap B)/P(A)=0.15/0.40=0.375$. Como
+$P(B\mid A)=0.375\ne P(B)=0.30$, los eventos \textbf{no} son
+independientes: que la economía crezca hace más probable que la empresa
+supere expectativas.
+\end{solBox}
+
+\section{Teorema de Bayes}
+
+\begin{cfaBox}
+Un analista asigna probabilidades a tres escenarios económicos para el
+próximo año: expansión, $P(\text{Exp})=0.50$; estabilidad,
+$P(\text{Est})=0.30$; recesión, $P(\text{Rec})=0.20$. La probabilidad de
+que una empresa emita un ``profit warning'' (advertencia de utilidades
+menores a lo esperado) bajo cada escenario es: $P(W\mid\text{Exp})=0.10$,
+$P(W\mid\text{Est})=0.20$, $P(W\mid\text{Rec})=0.50$. La empresa emite un
+profit warning. ¿Cuál es la probabilidad actualizada de que la economía
+esté en recesión, $P(\text{Rec}\mid W)$?
+\begin{enumerate}[label=\Alph*.]
+\item 20.0\%
+\item 23.8\%
+\item 47.6\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{C.} Primero, por la regla de la probabilidad total,
+\[
+P(W)=0.50(0.10)+0.30(0.20)+0.20(0.50)=0.05+0.06+0.10=0.21.
+\]
+Por el teorema de Bayes,
+\[
+P(\text{Rec}\mid W)=\frac{P(W\mid\text{Rec})\,P(\text{Rec})}{P(W)}=\frac{0.20\times0.50}{0.21}=\frac{0.10}{0.21}\approx0.476=47.6\%.
+\]
+La probabilidad \emph{prior} de recesión era 20\%; observar el profit
+warning la actualiza hacia arriba, a casi 47.6\%, porque un warning es
+mucho más probable bajo recesión (50\%) que bajo los otros escenarios.
+\end{solBox}
+
+\section{Valor esperado y varianza}
+
+\begin{cfaBox}
+Los rendimientos de una acción bajo tres escenarios económicos son: auge
+(\emph{boom}), probabilidad 25\%, rendimiento 20\%; normal,
+probabilidad 50\%, rendimiento 8\%; recesión, probabilidad 25\%,
+rendimiento $-10$\%. ¿Cuáles son el rendimiento esperado $E(R)$ y la
+desviación estándar $\sigma_R$?
+\begin{enumerate}[label=\Alph*.]
+\item $E(R)=6.0\%$; $\sigma_R=10.00\%$
+\item $E(R)=6.5\%$; $\sigma_R=10.71\%$
+\item $E(R)=6.5\%$; $\sigma_R=114.75\%$
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.}
+\[
+E(R)=0.25(20)+0.50(8)+0.25(-10)=5+4-2.5=6.5\%.
+\]
+\[
+\mathrm{Var}(R)=0.25(20-6.5)^2+0.50(8-6.5)^2+0.25(-10-6.5)^2=0.25(182.25)+0.50(2.25)+0.25(272.25)=114.75,
+\]
+en unidades de (puntos porcentuales)$^2$; así,
+$\sigma_R=\sqrt{114.75}\approx10.71\%$. (La opción C confunde la
+varianza, en unidades al cuadrado, con la desviación estándar --- un error
+común: la varianza \emph{nunca} se reporta directamente en las mismas
+unidades que $R$.)
+\end{solBox}
+
+\section{Covarianza y diversificación}
+
+\begin{cfaBox}
+Dos escenarios igualmente relevantes para un par de activos $A$ y $B$:
+escenario 1 (probabilidad 60\%), $R_A=10\%$, $R_B=5\%$; escenario 2
+(probabilidad 40\%), $R_A=-2\%$, $R_B=8\%$. ¿Cuál es
+$\mathrm{Cov}(R_A,R_B)$, y qué implica su signo para la diversificación de
+un portafolio que combine ambos activos?
+\begin{enumerate}[label=\Alph*.]
+\item $\mathrm{Cov}=+8.64$; los activos se mueven juntos, poca diversificación.
+\item $\mathrm{Cov}=-8.64$; los activos se mueven en direcciones opuestas, buena diversificación.
+\item $\mathrm{Cov}=-8.64$; la covarianza negativa implica que no se debe invertir en ambos.
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} $E(R_A)=0.6(10)+0.4(-2)=5.2\%$,
+$E(R_B)=0.6(5)+0.4(8)=6.2\%$. Entonces
+\[
+\mathrm{Cov}(R_A,R_B)=0.6(10-5.2)(5-6.2)+0.4(-2-5.2)(8-6.2)=0.6(-5.76)+0.4(-12.96)=-3.456-5.184=-8.64.
+\]
+Una covarianza negativa significa que, cuando $R_A$ sube respecto a su
+media, $R_B$ tiende a bajar respecto a la suya (y viceversa): combinar
+ambos activos reduce el riesgo total del portafolio por debajo del
+promedio ponderado de sus riesgos individuales --- exactamente el
+mecanismo detrás de la diversificación. (Nótese que esto \textbf{no}
+implica evitar el activo, como sugiere C: covarianza negativa es
+\emph{deseable} en un portafolio.)
+\end{solBox}
+
+\section{Distribución binomial}
+
+\begin{cfaBox}
+Un gestor de fondos supera a su índice de referencia (\emph{benchmark})
+con probabilidad 60\% en cualquier trimestre dado, de forma independiente
+trimestre a trimestre. ¿Cuál es la probabilidad de que supere al
+benchmark en exactamente 3 de los próximos 4 trimestres?
+\begin{enumerate}[label=\Alph*.]
+\item 25.92\%
+\item 34.56\%
+\item 60.00\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} Con $X\sim\mathrm{Bin}(4,0.6)$,
+\[
+P(X=3)=\binom{4}{3}(0.6)^3(0.4)^1=4\times0.216\times0.4=0.3456=34.56\%.
+\]
+\end{solBox}
+
+\section{Distribución normal}
+
+\begin{cfaBox}
+El rendimiento anual de un fondo se modela como
+$R\sim N(\mu=12\%,\sigma=8\%)$. ¿Cuál es, \textbf{aproximadamente}, la
+probabilidad de que el rendimiento del próximo año sea negativo?
+\begin{enumerate}[label=\Alph*.]
+\item 6.68\%
+\item 15.87\%
+\item 50.00\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{A.} Estandarizando, $Z=(0-12)/8=-1.5$. De la tabla normal
+estándar, $\Phi(-1.5)\approx0.0668$, es decir $P(R<0)\approx6.68\%$.
+(La opción B, $15.87\%$, es en realidad $P(R>20\%)$ para este mismo
+fondo, ya que $Z=(20-12)/8=+1$ y $1-\Phi(1)\approx0.1587$: un distractor
+típico de examen que intercambia la cola.)
+\end{solBox}
+
+\section{Razón de seguridad de Roy (\emph{safety-first ratio})}
+
+\begin{cfaBox}
+Un inversionista requiere que su portafolio no rinda menos de
+$R_L=2\%$. El Portafolio A tiene $E(R_A)=10\%$, $\sigma_A=10\%$; el
+Portafolio B tiene $E(R_B)=8\%$, $\sigma_B=6\%$. Según el criterio de
+seguridad de Roy, ¿cuál portafolio minimiza la probabilidad de rendir por
+debajo de $R_L$?
+\begin{enumerate}[label=\Alph*.]
+\item El Portafolio A, porque tiene mayor rendimiento esperado.
+\item El Portafolio B, porque tiene la razón SF más alta.
+\item Son equivalentes, porque ambos tienen la misma prima de riesgo relativa.
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} La razón de Roy es
+$\mathrm{SF}=\dfrac{E(R)-R_L}{\sigma}$; \emph{mayor} SF implica \emph{menor}
+probabilidad de caer por debajo de $R_L$ (bajo normalidad). Aquí,
+\[
+\mathrm{SF}_A=\frac{10-2}{10}=0.80, \qquad \mathrm{SF}_B=\frac{8-2}{6}=1.00.
+\]
+Aunque A tiene mayor rendimiento esperado, B tiene la razón SF más alta
+(por su menor volatilidad) y por lo tanto la menor probabilidad de un
+rendimiento inferior al umbral: el criterio de Roy explícitamente
+\textbf{no} elige por rendimiento esperado solo, sino por esa probabilidad
+de cola.
+\end{solBox}
+
+\section{Muestreo y error estándar}
+
+\begin{cfaBox}
+La desviación estándar poblacional de los rendimientos diarios de un
+activo es $\sigma=1.5\%$. Un analista toma una muestra de $n=36$ días de
+operación. ¿Cuál es el error estándar de la media muestral?
+\begin{enumerate}[label=\Alph*.]
+\item 0.042\%
+\item 0.250\%
+\item 1.500\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} $\mathrm{SE}(\bar X)=\sigma/\sqrt{n}=1.5/\sqrt{36}=1.5/6=0.25\%$.
+Cuadruplicar el tamaño de muestra ($n\to4n$) reduciría el error estándar a
+la mitad, no a un cuarto: el error estándar decrece con $\sqrt n$, no con
+$n$ --- un punto que aparece con frecuencia en preguntas de examen sobre
+el efecto de aumentar el tamaño de muestra.
+\end{solBox}
+
+\section{Reglas de probabilidad: unión de eventos}
+
+\begin{cfaBox}
+En una encuesta a 200 empresas del IPC, 80 reportaron haber adoptado
+inteligencia artificial en sus procesos ($P(A)=0.40$), 60 reportaron haber
+tenido una ronda de financiamiento en el último año ($P(B)=0.30$), y 24
+reportaron ambas cosas ($P(A\cap B)=0.12$). ¿Cuál es la probabilidad de
+que una empresa elegida al azar haya adoptado IA \textbf{o} haya tenido
+financiamiento (o ambas)?
+\begin{enumerate}[label=\Alph*.]
+\item 58\%
+\item 70\%
+\item 82\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{A.} Por la regla de adición,
+\[
+P(A\cup B)=P(A)+P(B)-P(A\cap B)=0.40+0.30-0.12=0.58=58\%.
+\]
+Restar $P(A\cap B)$ evita contar dos veces a las empresas que hicieron
+ambas cosas (una confusión frecuente que lleva a sumar $P(A)+P(B)$ sin
+más, dando el distractor incorrecto de $70\%$).
+\end{solBox}
+
+\section{Distribuciones continuas: por qué lognormal, no normal}
+
+\begin{cfaBox}
+Al modelar el \textbf{precio} futuro de una acción (a diferencia de su
+\emph{rendimiento}), los analistas suelen preferir una distribución
+lognormal sobre una distribución normal. ¿Cuál es la razón
+\textbf{principal}?
+\begin{enumerate}[label=\Alph*.]
+\item La distribución lognormal tiene media y varianza iguales.
+\item Una variable normal puede tomar valores negativos, pero un precio no puede ser negativo.
+\item La distribución lognormal es simétrica, igual que la normal.
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} Un precio de acción está acotado por abajo en cero (no puede
+ser negativo), mientras que una variable normal tiene soporte en toda la
+recta real $(-\infty,\infty)$ y por lo tanto asignaría probabilidad
+positiva a precios negativos --- algo sin sentido económico. Si el
+\emph{rendimiento compuesto continuamente} $\ln(P_1/P_0)$ se modela como
+normal, entonces el precio mismo $P_1=P_0\,e^{\ln(P_1/P_0)}$ resulta
+lognormal, que es siempre positivo por construcción. (C es falsa: la
+lognormal está sesgada a la derecha, no es simétrica.)
+\end{solBox}
+
+\section{Regla de multiplicación: eventos independientes}
+
+\begin{cfaBox}
+Una empresa tiene dos proyectos de inversión totalmente independientes
+entre sí, cada uno con 70\% de probabilidad de tener éxito. ¿Cuál es la
+probabilidad de que \textbf{ambos} proyectos tengan éxito?
+\begin{enumerate}[label=\Alph*.]
+\item 35.0\%
+\item 49.0\%
+\item 70.0\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} Para eventos independientes, $P(A\cap B)=P(A)\,P(B)$. Aquí,
+$0.70\times0.70=0.49=49.0\%$. (A es el promedio de las probabilidades, no
+su producto; C repite la probabilidad individual --- ninguno de los dos es
+la regla correcta para ``ambos ocurren''.)
+\end{solBox}
+
+\section{Rendimiento esperado de un portafolio}
+
+\begin{cfaBox}
+Un portafolio está compuesto en 60\% por acciones, con rendimiento
+esperado $E(R_{\text{acc}})=12\%$, y en 40\% por bonos, con
+rendimiento esperado $E(R_{\text{bon}})=5\%$. ¿Cuál es el rendimiento
+esperado del portafolio, $E(R_p)$?
+\begin{enumerate}[label=\Alph*.]
+\item 8.50\%
+\item 9.20\%
+\item 10.20\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} El rendimiento esperado de un portafolio es el promedio
+ponderado de los rendimientos esperados de sus componentes:
+\[
+E(R_p)=0.60(12)+0.40(5)=7.2+2.0=9.2\%.
+\]
+(A es el promedio simple, sin ponderar por los pesos 60/40 --- un error
+frecuente.)
+\end{solBox}
+
+\section{Riesgo de un portafolio de dos activos}
+
+\begin{cfaBox}
+Un portafolio combina el Activo A ($w_A=0.5$, $\sigma_A=20\%$) y el
+Activo B ($w_B=0.5$, $\sigma_B=10\%$), con correlación
+$\rho_{A,B}=0.3$. ¿Cuál es la desviación estándar del portafolio,
+$\sigma_p$?
+\begin{enumerate}[label=\Alph*.]
+\item 12.45\%
+\item 15.00\%
+\item 22.36\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{A.}
+\[
+\sigma_p^2=w_A^2\sigma_A^2+w_B^2\sigma_B^2+2w_Aw_B\rho_{A,B}\sigma_A\sigma_B
+=(0.5)^2(20)^2+(0.5)^2(10)^2+2(0.5)(0.5)(0.3)(20)(10),
+\]
+\[
+\sigma_p^2=100+25+30=155, \qquad \sigma_p=\sqrt{155}\approx12.45\%.
+\]
+(B, $15\%$, sería el promedio ponderado \emph{de las desviaciones
+estándar} --- correcto solo si $\rho_{A,B}=1$, es decir si los activos
+estuvieran perfectamente correlacionados, lo cual anularía el beneficio de
+diversificar. La correlación imperfecta, $\rho=0.3<1$, es precisamente lo
+que hace que $\sigma_p$ sea \emph{menor} que ese promedio ponderado.)
+\end{solBox}
+
+\section{Coeficiente de correlación}
+
+\begin{cfaBox}
+Dos activos tienen $\mathrm{Cov}(R_A,R_B)=45$, $\sigma_A=10\%$ y
+$\sigma_B=6\%$. ¿Cuál es su coeficiente de correlación $\rho_{A,B}$?
+\begin{enumerate}[label=\Alph*.]
+\item 0.45
+\item 0.75
+\item 4.50
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} $\rho_{A,B}=\mathrm{Cov}(R_A,R_B)/(\sigma_A\sigma_B)=45/(10\times6)=45/60=0.75$.
+(C, $4.50$, olvida dividir entre $\sigma_A\sigma_B$; recuerda que $\rho$,
+a diferencia de la covarianza, siempre está entre $-1$ y $+1$ --- un valor
+de $4.50$ ya debería verse como imposible.)
+\end{solBox}
+
+\section{Distribución uniforme continua}
+
+\begin{cfaBox}
+El tiempo (en días) que tarda en cerrarse una ronda de financiamiento para
+una \emph{startup}, dado que se inició el proceso, se modela como
+$X\sim U(0,20)$. ¿Cuál es la probabilidad de que el cierre tome entre 5 y
+15 días?
+\begin{enumerate}[label=\Alph*.]
+\item 25.0\%
+\item 50.0\%
+\item 75.0\%
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} Para $X\sim U(a,b)$, $P(c<X<d)=(d-c)/(b-a)$. Aquí,
+$(15-5)/(20-0)=10/20=0.50=50.0\%$. En una uniforme, la probabilidad
+depende solo de la \emph{longitud} del intervalo, no de su ubicación
+dentro de $[a,b]$.
+\end{solBox}
+
+\section{Razón de Sharpe: comparación de fondos}
+
+\begin{cfaBox}
+El Fondo A tiene $E(R_A)=14\%$, $\sigma_A=18\%$; el Fondo B tiene
+$E(R_B)=10\%$, $\sigma_B=8\%$. La tasa libre de riesgo es
+$R_f=3\%$. Según la razón de Sharpe, ¿qué fondo tuvo mejor desempeño
+ajustado por riesgo?
+\begin{enumerate}[label=\Alph*.]
+\item El Fondo A, con Sharpe $\approx0.611$.
+\item El Fondo B, con Sharpe $=0.875$.
+\item Ambos son iguales, porque el Fondo A tiene mayor rendimiento absoluto.
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.}
+\[
+\mathrm{Sharpe}_A=\frac{14-3}{18}=\frac{11}{18}\approx0.611, \qquad
+\mathrm{Sharpe}_B=\frac{10-3}{8}=\frac{7}{8}=0.875.
+\]
+A pesar de que A tiene mayor rendimiento esperado en términos absolutos, B
+ofrece más rendimiento en exceso de $R_f$ \emph{por unidad de riesgo total}
+--- esa es, por definición, la pregunta que responde la razón de Sharpe, y
+B la responde mejor.
+\end{solBox}
+
+\section{Intervalo de confianza para la media}
+
+\begin{cfaBox}
+Una muestra de $n=100$ meses de rendimientos de un fondo tiene media
+$\bar X=8\%$ y desviación estándar $\sigma=15\%$. Usando
+$z_{0.025}=1.96$, ¿cuál es el intervalo de confianza al 95\% para el
+rendimiento medio verdadero?
+\begin{enumerate}[label=\Alph*.]
+\item $(6.50\%,\ 9.50\%)$
+\item $(5.06\%,\ 10.94\%)$
+\item $(-7.00\%,\ 23.00\%)$
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} Primero, $\mathrm{SE}(\bar X)=\sigma/\sqrt n=15/\sqrt{100}=1.5\%$.
+Luego,
+\[
+\bar X\pm z_{0.025}\,\mathrm{SE}(\bar X)=8\pm1.96(1.5)=8\pm2.94=(5.06\%,\ 10.94\%).
+\]
+(C usa $\sigma=15\%$ directamente en vez del error estándar de la
+\emph{media} --- el error clásico de olvidar dividir entre $\sqrt n$ antes
+de construir el intervalo.)
+\end{solBox}
+
+\section{Prueba de hipótesis sobre el alfa de un fondo}
+
+\begin{cfaBox}
+Un analista quiere probar si el alfa (exceso de rendimiento no explicado
+por el mercado) de un fondo es significativamente distinto de cero,
+$H_0:\alpha=0$ contra $H_a:\alpha\ne0$. La muestra tiene $n=64$
+observaciones mensuales, alfa muestral $\hat\alpha=2\%$, y desviación
+estándar muestral $s=8\%$. Al nivel de 5\% (valor crítico
+$\approx1.96$ para una prueba de dos colas), ¿cuál es la conclusión?
+\begin{enumerate}[label=\Alph*.]
+\item Estadístico $=0.25$; no se rechaza $H_0$: el alfa no es significativo.
+\item Estadístico $=2.00$; se rechaza $H_0$: el alfa es significativo.
+\item Estadístico $=16.0$; no se puede concluir nada sin más información.
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} El error estándar es $\mathrm{SE}=s/\sqrt n=8/\sqrt{64}=8/8=1\%$.
+El estadístico de prueba es
+\[
+t=\frac{\hat\alpha-0}{\mathrm{SE}}=\frac{2-0}{1}=2.00.
+\]
+Como $|2.00|>1.96$, se rechaza $H_0$ al 5\%: hay evidencia estadística de
+que el alfa del fondo es distinto de cero. (A invierte la fracción,
+$\mathrm{SE}/\hat\alpha$ en vez de $\hat\alpha/\mathrm{SE}$; C olvida
+dividir entre $\sqrt n$.)
+\end{solBox}
+
+\section{Sesgo (\emph{skewness})}
+
+\begin{cfaBox}
+La distribución de pérdidas de una cartera de crédito tiene
+media $>$ mediana $>$ moda, y una cola larga hacia la derecha (hacia
+pérdidas grandes y poco frecuentes). Esta distribución se describe
+\textbf{mejor} como:
+\begin{enumerate}[label=\Alph*.]
+\item Sesgada negativamente (a la izquierda).
+\item Simétrica (sesgo cero).
+\item Sesgada positivamente (a la derecha).
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{C.} Cuando media $>$ mediana $>$ moda, y la cola larga apunta hacia
+valores grandes (a la derecha), el sesgo es \textbf{positivo}: la media es
+``jalada'' hacia arriba por unos pocos valores extremos grandes. En
+distribuciones de pérdidas (o de rendimientos con riesgo de cola), un sesgo
+positivo hacia pérdidas grandes es exactamente el patrón que preocupa a un
+gestor de riesgo. (El orden se invierte, moda $>$ mediana $>$ media, en el
+caso sesgado negativamente.)
+\end{solBox}
+
+\section{Curtosis y riesgo de cola}
+
+\begin{cfaBox}
+Los rendimientos diarios de un activo tienen curtosis (no en exceso) igual
+a 7, comparado con 3 para una distribución normal. Un analista que asuma
+erróneamente que estos rendimientos son normales estaría, \textbf{muy
+probablemente}:
+\begin{enumerate}[label=\Alph*.]
+\item Sobreestimando la probabilidad de rendimientos extremos.
+\item Subestimando la probabilidad de rendimientos extremos.
+\item Sin ningún sesgo, porque la curtosis no afecta las colas de la distribución.
+\end{enumerate}
+\end{cfaBox}
+\begin{solBox}
+\textbf{B.} Una curtosis de 7 (mayor que 3) indica una distribución
+\textbf{leptocúrtica}: más apuntada en el centro y con colas \emph{más
+pesadas} (\emph{fat tails}) que la normal --- es decir, eventos extremos
+son más frecuentes de lo que predice un modelo normal. Un analista que use
+la normal de todas formas subestimará sistemáticamente la probabilidad de
+pérdidas (o ganancias) grandes: precisamente el motivo por el que la
+gestión de riesgo financiero rara vez confía únicamente en la normalidad.
+\end{solBox}
+
+\begin{summaryBox}
+\textbf{En una frase:} en preguntas de probabilidad estilo CFA, el error
+más costoso casi nunca es aritmético --- es usar la fórmula correcta con
+el condicionamiento invertido (Bayes), confundir varianza con desviación
+estándar, olvidar dividir entre $\sqrt n$ al construir un error estándar,
+o elegir por rendimiento esperado ignorando el riesgo (Roy, Sharpe).
+Verificar \emph{qué} se está condicionando, y en qué unidades está cada
+resultado, antes de calcular.
+\end{summaryBox}
+
+\end{document}
