@@ -50,6 +50,7 @@ jupyter lab cuadernos/
 | [Sucesiones_de_Variables_Aleatorias 1](notas/Sucesiones_de_Variables_Aleatorias_1.pdf), [2](notas/Sucesiones_de_Variables_Aleatorias_2.pdf), [3](notas/Sucesiones_de_Variables_Aleatorias_3.pdf), [solutions](notas/Sucesiones_Soluciones.pdf) | modes of convergence of random variables |
 | [TCL_Notas](notas/TCL_Notas.pdf) and parts [1](notas/TCL_1_Convergencia_Debil.pdf), [2](notas/TCL_2_Continuidad_de_Levy.pdf), [3](notas/TCL_3_Demostracion.pdf), [4](notas/TCL_4_LGN_Lindeberg_Lyapunov.pdf) | central limit theorem: weak convergence, Lévy continuity, proof, strong law, Lindeberg–Feller and Lyapunov |
 | [Cadenas_de_Markov](notas/Cadenas_de_Markov.pdf), [beamer](notas/Cadenas_de_Markov_Beamer.pdf) | finite Markov chains in discrete time |
+| [Estadistica_Inferencial](notas/Estadistica_Inferencial.pdf) (with [source](notas/Estadistica_Inferencial.tex), XeLaTeX) | classical statistical inference: point estimation and maximum likelihood, confidence intervals from pivots, the CLT, $t$ and $\chi^2$, hypothesis tests and Neyman–Pearson, least squares and Gauss–Markov, with solved exercises, several from finance |
 
 ## Exercises
 

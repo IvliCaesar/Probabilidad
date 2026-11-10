@@ -1,0 +1,1545 @@
+% !TeX program = xelatex
+\documentclass[11pt]{article}
+
+%================================================
+% Robust preamble (compile-friendly)
+%================================================
+\usepackage[utf8]{inputenc}   % if you use pdflatex (safe)
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage[margin=1.15in]{geometry}
+\usepackage{microtype}
+\usepackage{iftex}
+\ifXeTeX
+  \usepackage{fontspec}
+\fi
+
+\usepackage{mathtools,amsmath,amssymb,amsthm}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{fillbetween}
+\usetikzlibrary{arrows.meta,positioning,calc,patterns,decorations.pathreplacing}
+\pgfplotsset{compat=1.18}
+\usepackage{mathrsfs}
+\usepackage{bbm}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  citecolor=blue,
+  urlcolor=blue
+}
+
+%================================================
+% Theorem style
+%================================================
+\theoremstyle{plain}
+\newtheorem{theorem}{Teorema}[section]
+\newtheorem{lemma}[theorem]{Lema}
+\newtheorem{proposition}[theorem]{Proposición}
+\newtheorem{corollary}[theorem]{Corolario}
+
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definición}
+\newtheorem{example}[theorem]{Ejemplo}
+\newtheorem{exercise}[theorem]{Ejercicio}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Observación}
+
+% Solutions environment
+\newtheoremstyle{solstyle}
+  {6pt}{6pt}{\normalfont}{}{\bfseries}{.}{.6em}{}
+\theoremstyle{solstyle}
+\newtheorem*{solution}{Solución}
+
+%================================================
+% Macros
+%================================================
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\mathrm{Var}}
+\newcommand{\Cov}{\mathrm{Cov}}
+\newcommand{\Pbb}{\mathbb{P}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\1}{\mathbbm{1}}
+\newcommand{\dd}{\,\mathrm{d}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\ip}[2]{\left\langle #1,#2\right\rangle}
+\newcommand{\Xbar}{\overline{X}}
+\newcommand{\xbar}{\overline{x}}
+\newcommand{\Ybar}{\overline{Y}}
+\newcommand{\ybar}{\overline{y}}
+
+
+%================================================
+% Colors
+%================================================
+\definecolor{MainBlue}{HTML}{1F4E79}
+\definecolor{SoftBlue}{HTML}{DCEEFF}
+\definecolor{MainRed}{HTML}{C0392B}
+\definecolor{SoftRed}{HTML}{FADBD8}
+\definecolor{MainGreen}{HTML}{1E8449}
+\definecolor{SoftGreen}{HTML}{D5F5E3}
+\definecolor{MainOrange}{HTML}{CA6F1E}
+\definecolor{SoftOrange}{HTML}{FDEBD0}
+
+%================================================
+% Title
+%================================================
+\title{\vspace{-1.2em}\textbf{Estadística Inferencial clásica}\\
+\large Métodos clásicos}
+\author{César Galindo}
+\date{\vspace{-0.4em}}
+
+\begin{document}
+\maketitle
+\vspace{-0.5em}
+\tableofcontents
+
+%================================================
+\section{Preliminares: modelo, muestra, estadísticos}
+%================================================
+
+\subsection{Modelo paramétrico y muestra i.i.d.}
+
+\begin{definition}[Modelo estadístico paramétrico]
+Un \emph{modelo estadístico} es una familia $\{P_\theta:\theta\in\Theta\}$ de distribuciones para la muestra
+$X=(X_1,\dots,X_n)$. En el enfoque frecuentista, $\theta$ es una constante desconocida; la aleatoriedad está en $X$.
+\end{definition}
+
+\begin{definition}[Muestra aleatoria i.i.d.]
+Decimos que $X_1,\dots,X_n$ es una \emph{muestra aleatoria i.i.d.} si son independientes y con la misma distribución.
+\end{definition}
+
+\begin{definition}[Estadístico]
+Un \emph{estadístico} es una función medible $T=h(X_1,\dots,X_n)$.
+\end{definition}
+
+\begin{lemma}[Media y varianza de la media muestral]\label{lem:meanvarXbar}
+Si $X_1,\dots,X_n$ son i.i.d. con $\E[X_i]=\mu$ y $\Var(X_i)=\sigma^2<\infty$, entonces
+\[
+\E[\Xbar]=\mu,\qquad \Var(\Xbar)=\frac{\sigma^2}{n}.
+\]
+\end{lemma}
+
+\begin{solution}
+Por linealidad, $\E[\Xbar]=\frac1n\sum_{i=1}^n \E[X_i]=\mu$.
+Por independencia, $\Var(\sum X_i)=\sum \Var(X_i)=n\sigma^2$; así
+$\Var(\Xbar)=\Var(\sum X_i)/n^2=\sigma^2/n$.
+\end{solution}
+
+\begin{remark}[Plantilla de modelado]
+\begin{enumerate}[label=\textbf{(\arabic*)},leftmargin=2.2em]
+\item Define una observación $X_i$ (retorno diario, tiempo entre eventos, etc.).
+\item Decide si i.i.d. es razonable (o como aproximación en una ventana temporal).
+\item Elige parámetro $\theta$ (media, volatilidad, tasa de default, $\beta$ CAPM, etc.).
+\item Elige estadístico(s) (media, varianza, MLE, OLS, etc.).
+\end{enumerate}
+\end{remark}
+
+\subsection{Ejemplos resueltos de modelado}
+
+\begin{example}[Retornos logarítmicos (finanzas)]\label{ex:model-returns}
+Sea $P_t$ el precio de cierre. Define retorno logarítmico diario
+\[
+R_t=\log\!\left(\frac{P_t}{P_{t-1}}\right).
+\]
+En una ventana corta (mercado ``estable''), se usa el modelo $R_1,\dots,R_n$ i.i.d. con $\E[R_i]=\mu$ y $\Var(R_i)=\sigma^2$.
+\end{example}
+
+\begin{solution}
+La hipótesis i.i.d. no es una verdad universal: es una aproximación local.
+En inferencia clásica, fijamos un modelo \emph{operativo} y cuantificamos incertidumbre sobre $\mu$ y $\sigma^2$.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.82\textwidth,height=5.8cm,xlabel={Día $t$},ylabel={$R_t$},xmin=1,xmax=10,ymin=-0.028,ymax=0.028,axis lines=left,ymajorgrids=true,xtick={1,...,10},title={Trayectoria ilustrativa de retornos logarítmicos diarios}]
+\addplot+[mark=*, smooth] coordinates {(1,0.010) (2,-0.006) (3,0.014) (4,0.004) (5,-0.018) (6,0.009) (7,0.016) (8,-0.010) (9,0.007) (10,0.012)};
+\addplot[dashed, domain=1:10]{0};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La trayectoria no pretende probar normalidad ni independencia; sólo muestra la clase de serie sobre la que luego se estima una media, una varianza y se construyen intervalos o pruebas. En práctica, el signo cambiante de los retornos sugiere que la señal promedio puede ser pequeña respecto al ruido.
+
+\begin{example}[Día positivo (finanzas)]\label{ex:model-bernoulli}
+Define $X_i=\1_{\{R_i>0\}}$. Entonces $X_i\in\{0,1\}$ y se modela como Bernoulli con parámetro
+$p=\Pbb(R>0)$; $\overline X$ estima $p$.
+\end{example}
+
+\begin{solution}
+Bajo Bernoulli$(p)$, $\E[X_i]=p$ y $\Var(X_i)=p(1-p)$.
+La estimación natural de $p$ es $\widehat p=\overline X$ (también es MLE; ver \Cref{ex:mle-bernoulli}).
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[ybar,bar width=16pt,width=0.58\textwidth,height=5.6cm,ymin=0,ymax=1,symbolic x coords={Negativo,Positivo},xtick=data,ylabel={Probabilidad},nodes near coords,title={Modelo Bernoulli para el signo del retorno}]
+\addplot coordinates {(Negativo,0.42) (Positivo,0.58)};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La barra de ``Positivo'' mayor que la de ``Negativo'' representa un escenario en el que la probabilidad de un día ganador supera 50\%. Este tipo de visualización ayuda a traducir un parámetro abstracto $p$ en una lectura operativa inmediata.
+
+\begin{example}[Tiempos entre órdenes (microestructura)]\label{ex:model-exp}
+Sea $X_i$ el tiempo (en segundos) entre dos órdenes consecutivas en un activo.
+Un modelo base es $X_i\sim \mathrm{Exp}(\lambda)$ i.i.d.
+\end{example}
+
+\begin{solution}
+Aquí $\lambda$ es la \emph{intensidad} (órdenes por segundo).
+El estimador MLE es $\widehat\lambda=1/\overline X$ (ver \Cref{ex:mle-exp}).
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.78\textwidth,height=5.6cm,xlabel={Tiempo entre órdenes $x$ (segundos)},ylabel={Densidad},xmin=0,xmax=8,ymin=0,ymax=0.75,samples=200,axis lines=left,ymajorgrids=true,title={Densidad exponencial ilustrativa ($\lambda=0.6$)}]
+\addplot+[domain=0:8] {0.6*exp(-0.6*x)};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La densidad exponencial decrece rápidamente: tiempos muy cortos entre órdenes son más frecuentes que tiempos largos. En business analytics esto suele interpretarse como actividad concentrada en lapsos breves con eventos largos relativamente raros.
+
+\begin{example}[Tasa de defecto (industria / riesgo)]\label{ex:model-default}
+Sea $X_i=\1_{\{\text{defecto}\}}$. Se modela $X_i\sim \mathrm{Bern}(p)$ i.i.d.
+El parámetro $p$ es la tasa de defecto.
+\end{example}
+
+\begin{solution}
+La inferencia clásica produce (i) estimación puntual $\widehat p$ y (ii) IC o pruebas sobre $p$.
+\end{solution}
+
+%================================================
+\section{Estimación puntual: sesgo, varianza, MSE; MLE}
+%================================================
+
+\subsection{Criterios de calidad}
+
+\begin{definition}[Estimador y estimación]
+Un \emph{estimador} de $\theta$ es una v.a.\ $\widehat\Theta=h(X_1,\dots,X_n)$.
+La \emph{estimación} es el valor observado $\widehat\theta=h(x_1,\dots,x_n)$.
+\end{definition}
+
+\begin{definition}[Sesgo y MSE]
+\[
+\mathrm{Bias}_\theta(\widehat\Theta)=\E_\theta[\widehat\Theta]-\theta,
+\qquad
+\mathrm{MSE}_\theta(\widehat\Theta)=\E_\theta\!\left[(\widehat\Theta-\theta)^2\right].
+\]
+\end{definition}
+
+\begin{theorem}[Descomposición sesgo--varianza]\label{thm:biasvar}
+Para todo estimador $\widehat\Theta$ con segundo momento finito,
+\[
+\mathrm{MSE}_\theta(\widehat\Theta)=\Var_\theta(\widehat\Theta)+\mathrm{Bias}_\theta(\widehat\Theta)^2.
+\]
+\end{theorem}
+
+\begin{solution}
+Sea $b=\E[\widehat\Theta]-\theta$. Entonces
+$\widehat\Theta-\theta=(\widehat\Theta-\E[\widehat\Theta])+b$.
+Al cuadrar y tomar esperanza:
+\[
+\E[(\widehat\Theta-\theta)^2]
+=\E[(\widehat\Theta-\E[\widehat\Theta])^2] + 2b\,\E[\widehat\Theta-\E[\widehat\Theta]] + b^2
+=\Var(\widehat\Theta)+b^2.
+\]
+\end{solution}
+
+\begin{corollary}[Insesgadez reduce MSE a varianza]\label{cor:unbiasedMSE}
+Si $\widehat\Theta$ es insesgado, entonces $\mathrm{MSE}_\theta(\widehat\Theta)=\Var_\theta(\widehat\Theta)$.
+\end{corollary}
+
+\begin{solution}
+Si $\mathrm{Bias}=0$, aplica \Cref{thm:biasvar}.
+\end{solution}
+
+\subsection{Media y varianza muestral (pruebas completas)}
+
+\begin{definition}[Media y varianza muestral]
+\[
+\Xbar=\frac1n\sum_{i=1}^n X_i,
+\qquad
+S^2=\frac{1}{n-1}\sum_{i=1}^n (X_i-\Xbar)^2.
+\]
+\end{definition}
+
+\begin{proposition}[Insesgadez de $\Xbar$]
+Si $\E[X_i]=\mu$, entonces $\E[\Xbar]=\mu$.
+\end{proposition}
+
+\begin{solution}
+Es la primera igualdad del \Cref{lem:meanvarXbar}.
+\end{solution}
+
+\begin{lemma}[Identidad de descomposición de cuadrados]\label{lem:ss-decomp}
+Para cualquier números $x_1,\dots,x_n$ y cualquier $a\in\R$,
+\[
+\sum_{i=1}^n (x_i-\overline x)^2=\sum_{i=1}^n (x_i-a)^2 - n(\overline x-a)^2,
+\quad \overline x=\frac1n\sum_{i=1}^n x_i.
+\]
+\end{lemma}
+
+\begin{solution}
+Escribe $x_i-\overline x=(x_i-a)-(\overline x-a)$ y expande:
+\[
+\sum (x_i-\overline x)^2=\sum (x_i-a)^2 -2(\overline x-a)\sum (x_i-a) + \sum(\overline x-a)^2.
+\]
+Pero $\sum (x_i-a)=n(\overline x-a)$ y $\sum(\overline x-a)^2=n(\overline x-a)^2$.
+Sustituyendo queda la identidad.
+\end{solution}
+
+\begin{theorem}[Insesgadez de $S^2$]\label{thm:unbiasedS2}
+Si $X_1,\dots,X_n$ son i.i.d.\ con varianza $\sigma^2$, entonces $\E[S^2]=\sigma^2$.
+\end{theorem}
+
+\begin{solution}
+Sea $\mu=\E[X_i]$. Aplica \Cref{lem:ss-decomp} con $a=\mu$ y $x_i=X_i$:
+\[
+\sum (X_i-\Xbar)^2=\sum (X_i-\mu)^2 - n(\Xbar-\mu)^2.
+\]
+Toma esperanza:
+\[
+\E\!\left[\sum (X_i-\Xbar)^2\right]=\sum \E[(X_i-\mu)^2] - n\,\E[(\Xbar-\mu)^2]
+=n\sigma^2 - n\,\Var(\Xbar).
+\]
+Por \Cref{lem:meanvarXbar}, $\Var(\Xbar)=\sigma^2/n$; así la esperanza vale $(n-1)\sigma^2$.
+Divide por $n-1$ para obtener $\E[S^2]=\sigma^2$.
+\end{solution}
+
+\begin{corollary}[Consistencia de $\Xbar$]\label{cor:consistency-Xbar}
+Si $\Var(X_i)=\sigma^2<\infty$, entonces $\Xbar\to \mu$ en probabilidad cuando $n\to\infty$.
+\end{corollary}
+
+\begin{solution}
+Por Chebyshev: $\Pbb(|\Xbar-\mu|\ge\varepsilon)\le \Var(\Xbar)/\varepsilon^2=(\sigma^2/n)/\varepsilon^2\to 0$.
+\end{solution}
+
+\subsection{Máxima verosimilitud (MLE): teoría y pruebas}
+
+\begin{definition}[Verosimilitud y log-verosimilitud]
+Si la densidad/pmf es $f(x;\theta)$, para datos $(x_1,\dots,x_n)$ se define
+\[
+L(\theta)=\prod_{i=1}^n f(x_i;\theta),
+\qquad
+\ell(\theta)=\log L(\theta)=\sum_{i=1}^n \log f(x_i;\theta).
+\]
+Un \emph{MLE} es un $\widehat\theta$ que maximiza $L(\theta)$ (equiv.\ $\ell(\theta)$).
+\end{definition}
+
+\begin{theorem}[Invarianza del MLE]\label{thm:invarianceMLE}
+Si $\widehat\theta$ es MLE de $\theta$ y $g$ es una función tal que $g(\widehat\theta)$ está bien definida,
+entonces $g(\widehat\theta)$ es un MLE de $g(\theta)$ (verosimilitud perfilada).
+\end{theorem}
+
+\begin{solution}
+Para $u=g(\theta)$ define la verosimilitud perfilada
+$\widetilde L(u)=\sup_{\theta:\,g(\theta)=u}L(\theta)$.
+Como $L(\widehat\theta)\ge L(\theta)$ para toda $\theta$, se tiene $\widetilde L(u)\le L(\widehat\theta)$ para todo $u$,
+con igualdad en $u=g(\widehat\theta)$. Por tanto $g(\widehat\theta)$ maximiza $\widetilde L$.
+\end{solution}
+
+\begin{remark}[Plantilla MLE]
+\begin{enumerate}[label=\textbf{(\arabic*)},leftmargin=2.2em]
+\item Escribe $L(\theta)$ y luego $\ell(\theta)$.
+\item Resuelve $\ell'(\theta)=0$ (o gradiente $=0$).
+\item Verifica máximo (segunda derivada / concavidad / frontera).
+\item Si piden $g(\theta)$, usa invarianza.
+\end{enumerate}
+\end{remark}
+
+\subsection{Ejemplos resueltos de MLE y estimación puntual}
+
+\begin{example}[Bernoulli: MLE de $p$]\label{ex:mle-bernoulli}
+Si $X_i\sim \mathrm{Bern}(p)$, entonces el MLE es $\widehat p=\overline X$.
+\end{example}
+
+\begin{solution}
+Con $S=\sum x_i$:
+\[
+L(p)=\prod p^{x_i}(1-p)^{1-x_i}=p^{S}(1-p)^{n-S},
+\quad
+\ell(p)=S\log p+(n-S)\log(1-p).
+\]
+Deriva:
+\[
+\ell'(p)=\frac{S}{p}-\frac{n-S}{1-p}=0
+\iff S(1-p)=p(n-S)\iff \widehat p=\frac{S}{n}=\overline X.
+\]
+Además $\ell''(p)=-S/p^2-(n-S)/(1-p)^2<0$ para $0<p<1$, luego es máximo interior.
+\end{solution}
+
+\begin{example}[Exponencial: MLE de $\lambda$]\label{ex:mle-exp}
+Si $X_i\sim \mathrm{Exp}(\lambda)$ (densidad $\lambda e^{-\lambda x}$, $x\ge0$), entonces
+$\widehat\lambda=1/\overline X$.
+\end{example}
+
+\begin{solution}
+\[
+\ell(\lambda)=\sum(\log\lambda-\lambda x_i)=n\log\lambda-\lambda\sum x_i,
+\quad
+\ell'(\lambda)=\frac{n}{\lambda}-\sum x_i.
+\]
+Igualando a cero: $\widehat\lambda=n/\sum x_i=1/\overline X$.
+Como $\ell''(\lambda)=-n/\lambda^2<0$, es máximo.
+\end{solution}
+
+\begin{example}[Normal: MLE de $\mu$ y $\sigma^2$]\label{ex:mle-normal}
+Si $X_i\sim N(\mu,\sigma^2)$ i.i.d., entonces
+\[
+\widehat\mu_{\text{ML}}=\Xbar,\qquad
+\widehat{\sigma^2}_{\text{ML}}=\frac1n\sum_{i=1}^n (X_i-\Xbar)^2=\frac{n-1}{n}S^2.
+\]
+\end{example}
+
+\begin{solution}
+La log-verosimilitud (omitiendo constantes) es
+\[
+\ell(\mu,\sigma^2)= -\frac{n}{2}\log(\sigma^2)-\frac{1}{2\sigma^2}\sum (x_i-\mu)^2.
+\]
+Para $\mu$:
+\[
+\frac{\partial \ell}{\partial \mu}=\frac{1}{\sigma^2}\sum(x_i-\mu)=0 \iff \widehat\mu=\Xbar.
+\]
+Sustituye $\mu=\Xbar$:
+\[
+\ell(\sigma^2)= -\frac{n}{2}\log(\sigma^2)-\frac{1}{2\sigma^2}\sum (x_i-\Xbar)^2.
+\]
+Deriva:
+\[
+\frac{d\ell}{d\sigma^2}=-\frac{n}{2}\frac{1}{\sigma^2}+\frac{1}{2}\frac{\sum (x_i-\Xbar)^2}{(\sigma^2)^2}=0
+\iff \widehat{\sigma^2}=\frac1n\sum (x_i-\Xbar)^2.
+\]
+La segunda derivada es negativa en el máximo.
+\end{solution}
+
+\begin{example}[Volatilidad anualizada (finanzas): estimación puntual]\label{ex:vol-annual}
+Con retornos diarios $R_i$ en una ventana estable y modelo $R_i\sim N(\mu,\sigma^2)$:
+\[
+\widehat\sigma_{\text{diaria}}=\sqrt{S^2},\qquad
+\widehat\sigma_{\text{anual}}=\sqrt{252}\,\widehat\sigma_{\text{diaria}}.
+\]
+\end{example}
+
+\begin{solution}
+La insesgadez de $S^2$ para $\sigma^2$ es \Cref{thm:unbiasedS2}.
+La anualización usa la regla $\Var(\sum_{t=1}^{T}R_t)=T\sigma^2$ bajo independencia,
+por lo que la desviación estándar escala como $\sqrt{T}$.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.80\textwidth,height=5.8cm,xlabel={Horizonte $T$ (días)},ylabel={Volatilidad escalada},xmin=1,xmax=252,ymin=0,ymax=0.34,samples=200,axis lines=left,ymajorgrids=true,title={Escalamiento $\sigma_T=\sqrt{T}\,\sigma_d$ con $\sigma_d=0.02$},xtick={1,21,63,126,252}]
+\addplot+[domain=1:252] {0.02*sqrt(x)};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+%================================================
+\section{Intervalos de confianza: pivotes, CLT, $t$ y $\chi^2$}
+%================================================
+
+\subsection{Pivotes e intervalos}
+
+\begin{definition}[Intervalo de confianza]
+Un intervalo aleatorio $[L(X),U(X)]$ es un IC de nivel $1-\alpha$ si
+$\Pbb_\theta(L(X)\le \theta\le U(X))=1-\alpha$ (o $\ge 1-\alpha$).
+\end{definition}
+
+\begin{definition}[Pivote]
+Una v.a.\ $Q(X,\theta)$ es un \emph{pivote} si su distribución no depende de $\theta$.
+\end{definition}
+
+\begin{proposition}[Método del pivote]\label{prop:pivot}
+Si $Q(X,\theta)$ es pivote y existen $a<b$ con $\Pbb(a\le Q\le b)=1-\alpha$ y
+$a\le Q(X,\theta)\le b \iff L(X)\le \theta\le U(X)$, entonces $[L(X),U(X)]$ es un IC $1-\alpha$.
+\end{proposition}
+
+\begin{solution}
+Por equivalencia de eventos, sus probabilidades coinciden.
+\end{solution}
+
+\subsection{IC aproximado para $\mu$ (CLT) y tamaño de muestra}
+
+\begin{theorem}[CLT (recordatorio operativo)]\label{thm:CLT}
+Si $X_i$ i.i.d. con $\E[X_i]=\mu$ y $\Var(X_i)=\sigma^2<\infty$, entonces
+\[
+\frac{\sqrt{n}(\Xbar-\mu)}{\sigma}\Rightarrow N(0,1).
+\]
+\end{theorem}
+
+\begin{remark}
+En un curso básico se toma este teorema como prerrequisito (ver Apéndice \ref{app:prereq}).
+\end{remark}
+
+\begin{theorem}[IC aproximado para $\mu$ con $\sigma$ conocida]\label{thm:CImeanCLT}
+Para $n$ grande, aproximadamente
+\[
+\mu\in\left[\Xbar - z_{\alpha/2}\frac{\sigma}{\sqrt n},\ \Xbar + z_{\alpha/2}\frac{\sigma}{\sqrt n}\right].
+\]
+\end{theorem}
+
+\begin{solution}
+Por \Cref{thm:CLT}, $Z_n=(\Xbar-\mu)/(\sigma/\sqrt n)\approx N(0,1)$.
+Entonces $\Pbb(|Z_n|\le z_{\alpha/2})\approx 1-\alpha$.
+Despeja $\mu$.
+\end{solution}
+
+\begin{corollary}[Tamaño muestral para margen $E$]\label{cor:nforE}
+Si quieres semiancho $\le E$, basta tomar
+\[
+n\ge \left(\frac{z_{\alpha/2}\sigma}{E}\right)^2.
+\]
+\end{corollary}
+
+\begin{solution}
+El semiancho del IC es $z_{\alpha/2}\sigma/\sqrt n$; impón $\le E$.
+\end{solution}
+
+\subsection{Normal exacto: $\chi^2$ para $\sigma^2$ y $t$ para $\mu$}
+
+\begin{theorem}[Cochran: $\frac{(n-1)S^2}{\sigma^2}\sim\chi^2_{n-1}$]\label{thm:cochran}
+Si $X_1,\dots,X_n\sim N(\mu,\sigma^2)$ i.i.d., entonces
+\[
+\frac{(n-1)S^2}{\sigma^2}\sim \chi^2_{n-1}.
+\]
+\end{theorem}
+
+\begin{solution}
+Escribe $X_i=\mu+\sigma Z_i$ con $Z_i\sim N(0,1)$ i.i.d. Entonces
+\[
+\sum (X_i-\Xbar)^2=\sigma^2\sum (Z_i-\overline Z)^2.
+\]
+El vector $Z\in\R^n$ es normal estándar e invariante por rotaciones.
+La descomposición ortogonal $\R^n=\mathrm{span}\{\mathbf 1\}\oplus \mathbf 1^\perp$
+separa una coordenada (promedio) y $n-1$ coordenadas ortogonales independientes $N(0,1)$.
+La suma $\sum(Z_i-\overline Z)^2$ es la suma de cuadrados de esas $n-1$ normales,
+luego tiene distribución $\chi^2_{n-1}$.
+\end{solution}
+
+\begin{corollary}[IC exacto para $\sigma^2$]\label{cor:CIvar}
+Sea $\chi^2_{\gamma,\nu}$ el cuantil tal que $\Pbb(\chi^2_\nu\le \chi^2_{\gamma,\nu})=\gamma$.
+Entonces un IC exacto $1-\alpha$ para $\sigma^2$ es
+\[
+\sigma^2\in
+\left[
+\frac{(n-1)S^2}{\chi^2_{1-\alpha/2,n-1}},
+\ \frac{(n-1)S^2}{\chi^2_{\alpha/2,n-1}}
+\right].
+\]
+\end{corollary}
+
+\begin{solution}
+Usa el pivote $Q=(n-1)S^2/\sigma^2\sim\chi^2_{n-1}$ y encierra $Q$ entre cuantiles de colas iguales:
+$\Pbb(\chi^2_{\alpha/2,n-1}\le Q\le \chi^2_{1-\alpha/2,n-1})=1-\alpha$. Despeja $\sigma^2$.
+\end{solution}
+
+\begin{theorem}[Pivote $t$ para $\mu$ con $\sigma$ desconocida]\label{thm:tPivot}
+Si $X_1,\dots,X_n\sim N(\mu,\sigma^2)$ i.i.d., entonces
+\[
+T=\frac{\Xbar-\mu}{S/\sqrt n}\sim t_{n-1}.
+\]
+\end{theorem}
+
+\begin{solution}
+Bajo normalidad,
+$Z=(\Xbar-\mu)/(\sigma/\sqrt n)\sim N(0,1)$.
+Por \Cref{thm:cochran}, $U=(n-1)S^2/\sigma^2\sim\chi^2_{n-1}$.
+Además $\Xbar$ es independiente de $S^2$ en el caso normal (misma descomposición ortogonal).
+Entonces
+\[
+T=\frac{Z}{\sqrt{U/(n-1)}}\sim t_{n-1}
+\]
+por definición de la distribución t.
+\end{solution}
+
+\begin{corollary}[IC exacto para $\mu$]\label{cor:CImuExact}
+Un IC exacto $1-\alpha$ para $\mu$ es
+\[
+\mu\in \left[\Xbar - t_{1-\alpha/2,n-1}\frac{S}{\sqrt n},\ \Xbar + t_{1-\alpha/2,n-1}\frac{S}{\sqrt n}\right].
+\]
+\end{corollary}
+
+\begin{solution}
+Por \Cref{thm:tPivot}, $\Pbb(|T|\le t_{1-\alpha/2,n-1})=1-\alpha$. Despeja $\mu$.
+\end{solution}
+
+\subsection{Ejemplos resueltos de IC, incluyendo finanzas}
+
+\begin{example}[IC para media de retornos (finanzas)]
+Con retornos $R_1,\dots,R_n$ y suponer normalidad, un IC $95\%$ para $\mu$ es
+\[
+\Xbar \pm t_{0.975,n-1}\frac{S}{\sqrt n}.
+\]
+\end{example}
+
+\begin{solution}
+Si $R_1,\dots,R_n\sim N(\mu,\sigma^2)$ i.i.d.\ y $\sigma$ es desconocida, el pivote exacto es
+\[
+T=\frac{\overline R-\mu}{S/\sqrt n}\sim t_{n-1}.
+\]
+Para 95\% de confianza tomamos $\alpha=0.05$ y por tanto
+\[
+\Pbb\!\left(-t_{0.975,n-1}\le \frac{\overline R-\mu}{S/\sqrt n}\le t_{0.975,n-1}\right)=0.95.
+\]
+Despejando $\mu$ se obtiene
+\[
+\mu\in\left[\overline R-t_{0.975,n-1}\frac{S}{\sqrt n},\ \overline R+t_{0.975,n-1}\frac{S}{\sqrt n}\right].
+\]
+Interpretación business: este intervalo entrega el rango de valores plausibles para el rendimiento medio diario de la estrategia o del activo. Si todo el intervalo estuviera por arriba de $0$, tendríamos evidencia de rentabilidad media positiva; si contiene al $0$, la evidencia es débil o ambigua.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.82\textwidth,height=4.2cm,xmin=-0.01,xmax=0.03,ymin=0,ymax=1.05,
+axis x line=bottom,axis y line=none,ytick=\empty,
+xlabel={Media diaria de retornos},title={IC del 95\% para la media diaria $\mu$}]
+\addplot[name path=A, draw=none] coordinates {(0.004,0.25) (0.022,0.25)};
+\addplot[name path=B, draw=none] coordinates {(0.004,0.75) (0.022,0.75)};
+\addplot[SoftBlue] fill between[of=A and B];
+\addplot[MainBlue,line width=2pt] coordinates {(0.004,0.5) (0.022,0.5)};
+\addplot+[only marks, mark=*, MainRed, mark size=3.1pt] coordinates {(0.013,0.5)};
+\addplot[dashed, MainRed] coordinates {(0.013,0.16) (0.013,0.84)};
+\node[text=MainBlue] at (axis cs:0.004,0.88) {$L$};
+\node[text=MainRed] at (axis cs:0.013,0.88) {$\overline X$};
+\node[text=MainBlue] at (axis cs:0.022,0.88) {$U$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La franja azul representa el conjunto de valores plausibles para la media poblacional $\mu$ al 95\%. El punto rojo es la media muestral $\overline X$, que funciona como centro del intervalo. Cuanto más corto es el segmento azul, mayor es la precisión de la estimación.
+
+\begin{example}[IC para volatilidad (finanzas)]
+Bajo normalidad, un IC $95\%$ para $\sigma^2$ es el de \Cref{cor:CIvar} con $\alpha=0.05$.
+Para $\sigma$ toma raíz cuadrada; para anualizar multiplica por $\sqrt{252}$.
+\end{example}
+
+\begin{solution}
+Bajo normalidad, el pivote
+\[
+Q=\frac{(n-1)S^2}{\sigma^2}\sim \chi^2_{n-1}
+\]
+permite construir primero un IC exacto para $\sigma^2$:
+\[
+\sigma^2\in \left[\frac{(n-1)S^2}{\chi^2_{0.975,n-1}},\ \frac{(n-1)S^2}{\chi^2_{0.025,n-1}}\right].
+\]
+Luego aplicamos dos transformaciones económicas muy naturales:
+\[
+\sigma=\sqrt{\sigma^2},
+\qquad
+\sigma_{\text{anual}}=\sqrt{252}\,\sigma.
+\]
+Como tanto la raíz cuadrada como la multiplicación por $\sqrt{252}$ son transformaciones monótonas crecientes, basta transformar extremo inferior y extremo superior. En términos financieros, este ejemplo muestra cómo pasar de incertidumbre en la varianza diaria a incertidumbre en una medida mucho más interpretable para gestión de riesgo: la volatilidad anualizada.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.82\textwidth,height=5.8cm,xlabel={Volatilidad diaria $\sigma$},ylabel={Volatilidad anualizada},xmin=0.005,xmax=0.035,ymin=0.08,ymax=0.58,axis lines=left,ymajorgrids=true,title={Transformación monótona $\sigma \mapsto \sqrt{252}\,\sigma$}]
+\addplot+[domain=0.005:0.035, samples=100, MainGreen, line width=2pt] {sqrt(252)*x};
+\addplot+[only marks, mark=*, MainOrange, mark size=2.6pt] coordinates {(0.015, {sqrt(252)*0.015}) (0.025,{sqrt(252)*0.025})};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La recta verde muestra que anualizar volatilidad es una transformación lineal creciente. Si un valor diario es plausible, su versión anualizada también lo es al transformar ambos extremos del intervalo. Los puntos naranjas ilustran cómo cambian dos niveles diarios típicos al pasar a escala anual.
+
+\begin{example}[IC aproximado para proporción de días positivos]
+Con $X_i=\1_{\{R_i>0\}}$ y $n$ grande, un IC aproximado $1-\alpha$ para $p$ es
+\[
+\overline X \pm z_{\alpha/2}\sqrt{\frac{\overline X(1-\overline X)}{n}}.
+\]
+\end{example}
+
+\begin{solution}
+Como $X_i=\mathbf{1}_{\{R_i>0\}}$, tenemos $X_i\sim \mathrm{Bernoulli}(p)$ y
+\[
+\E[X_i]=p,\qquad \Var(X_i)=p(1-p).
+\]
+Entonces
+\[
+\overline X=\widehat p,\qquad \Var(\widehat p)\approx \frac{p(1-p)}{n}.
+\]
+Para $n$ grande, el CLT da
+\[
+\frac{\widehat p-p}{\sqrt{p(1-p)/n}}\approx N(0,1).
+\]
+Como $p$ es desconocido, sustituimos $p$ por $\widehat p=\overline X$, obteniendo el IC Wald
+\[
+\widehat p \pm z_{\alpha/2}\sqrt{\frac{\widehat p(1-\widehat p)}{n}}.
+\]
+Interpretación de negocio: el intervalo cuantifica la incertidumbre en la fracción de días ``ganadores'' de una estrategia. No basta decir que el porcentaje observado fue alto; hay que medir cuán estable podría ser ese porcentaje en la población.
+\end{solution}
+
+\begin{example}[Tamaño muestral para margen de error del spread medio]
+Si el spread diario $S_i$ tiene desviación típica aproximada $\sigma\approx 0.8$ centavos
+y deseas margen $E=0.2$ centavos con 95\% de confianza usando aproximación normal, toma
+\[
+n\ge \left(\frac{1.96\cdot 0.8}{0.2}\right)^2 = (7.84)^2 \approx 61.47,
+\]
+así que $n=62$ días.
+\end{example}
+
+\begin{solution}
+La fórmula general para controlar un margen de error $E$ en un IC normal para la media es
+\[
+n\ge \left(\frac{z_{\alpha/2}\sigma}{E}\right)^2.
+\]
+Aquí el problema es operacional: ¿cuántos días de datos necesito para estimar el spread promedio con precisión útil para trading o microestructura? Sustituyendo $z_{0.025}=1.96$, $\sigma=0.8$ y $E=0.2$ obtenemos
+\[
+n\ge \left(\frac{1.96\cdot 0.8}{0.2}\right)^2\approx 61.47.
+\]
+Como el tamaño de muestra debe ser entero y además queremos garantizar el margen deseado, redondeamos hacia arriba: $n=62$.
+\end{solution}
+
+%================================================
+\section{Pruebas de hipótesis: nivel, potencia, p-value; razón de verosimilitud}
+%================================================
+
+\subsection{Definiciones básicas}
+
+\begin{definition}[Prueba, región crítica, nivel]
+Una prueba es una función $\varphi(X)\in\{0,1\}$: \emph{rechaza} $H_0$ si $\varphi=1$.
+Su \emph{nivel} es $\sup_{\theta\in\Theta_0}\E_\theta[\varphi]\le \alpha$ (control de error tipo I).
+\end{definition}
+
+\begin{definition}[Errores tipo I/II; potencia]
+Error tipo I: rechazar $H_0$ siendo cierta (probabilidad $\le\alpha$).
+Error tipo II: no rechazar $H_0$ siendo falsa (probabilidad $\beta(\theta)$).
+Potencia: $1-\beta(\theta)$.
+\end{definition}
+
+\begin{definition}[p-value (forma estándar)]
+Dado estadístico $W$ y valor observado $w_{\text{obs}}$, el p-value es
+$\Pbb_{H_0}(\text{``tan extremo o más'' que }w_{\text{obs}})$ en la dirección de $H_1$.
+\end{definition}
+
+\subsection{Neyman--Pearson (hipótesis simples) con prueba completa}
+
+\begin{theorem}[Neyman--Pearson (simples)]\label{thm:NP}
+Para $H_0:f_0$ vs $H_1:f_1$, la prueba de razón de verosimilitudes
+\[
+\varphi^{*}(x)
+=
+\mathbf{1}_{\{\Lambda(x)\le c\}},
+\qquad
+\Lambda(x)=\frac{f_0(x)}{f_1(x)},
+\]
+con $c$ elegido de modo que 
+\[
+\mathbb{E}_0[\varphi^{*}] = \alpha
+\quad (\text{o } \le \alpha)
+\]
+es la prueba más poderosa de nivel $\alpha$.
+\end{theorem}
+
+\begin{solution}
+Sea $\varphi$ cualquier prueba tal que $\mathbb{E}_0[\varphi]\le\alpha$.
+Entonces
+\[
+\mathbb{E}_1[\varphi^{*}-\varphi]
+=
+\int (\varphi^{*}-\varphi) f_1(x)\, \mathrm{d}x
+=
+\int (\varphi^{*}-\varphi)\frac{f_1(x)}{f_0(x)} f_0(x)\, \mathrm{d}x .
+\]
+
+En el conjunto $\{\varphi^{*}=1\}$ se tiene $f_1/f_0\ge 1/c$ 
+(equivalentemente $\Lambda\le c$);  
+en $\{\varphi^{*}=0\}$ se tiene $f_1/f_0\le 1/c$.
+
+Por tanto,
+\[
+\mathbb{E}_1[\varphi^{*}-\varphi]
+\ge
+\frac{1}{c}
+\int (\varphi^{*}-\varphi) f_0(x)\, \mathrm{d}x
+=
+\frac{1}{c}
+\bigl(
+\mathbb{E}_0[\varphi^{*}]
+-
+\mathbb{E}_0[\varphi]
+\bigr)
+\ge 0 .
+\]
+
+En consecuencia,
+\[
+\mathbb{E}_1[\varphi^{*}]
+\ge
+\mathbb{E}_1[\varphi].
+\]
+\end{solution}
+
+\subsection{Pruebas para media: $z$ y $t$; dualidad IC--prueba}
+
+\begin{theorem}[$z$-test para media con $\sigma$ conocida]\label{thm:ztest}
+Si $X_i\sim N(\mu,\sigma^2)$ i.i.d.\ con $\sigma$ conocida, para $H_0:\mu=\mu_0$ vs $H_1:\mu\neq\mu_0$,
+\[
+W=\frac{\Xbar-\mu_0}{\sigma/\sqrt n}\sim N(0,1)\ \text{bajo }H_0,
+\]
+y la prueba de nivel $\alpha$ rechaza si $\abs{W}\ge z_{\alpha/2}$.
+\end{theorem}
+
+\begin{solution}
+Bajo $H_0$, $\Xbar\sim N(\mu_0,\sigma^2/n)$; al estandarizar se obtiene $N(0,1)$.
+La región $\{|W|\ge z_{\alpha/2}\}$ tiene probabilidad $\alpha$ por definición del cuantil.
+\end{solution}
+
+\begin{theorem}[$t$-test para media con $\sigma$ desconocida (normal)]\label{thm:ttest}
+Si $X_i\sim N(\mu,\sigma^2)$ i.i.d.\ con $\sigma$ desconocida, para $H_0:\mu=\mu_0$ vs $H_1:\mu\neq\mu_0$,
+\[
+T=\frac{\Xbar-\mu_0}{S/\sqrt n}\sim t_{n-1}\ \text{bajo }H_0,
+\]
+y se rechaza si $\abs{T}\ge t_{1-\alpha/2,n-1}$.
+\end{theorem}
+
+\begin{solution}
+Es \Cref{thm:tPivot} con $\mu$ reemplazada por $\mu_0$.
+\end{solution}
+
+\begin{proposition}[Dualidad IC--prueba]\label{prop:CItestDual}
+En normal con $\sigma$ desconocida: el $t$-test bilateral de nivel $\alpha$ no rechaza $H_0:\mu=\mu_0$
+si y sólo si $\mu_0$ pertenece al IC $1-\alpha$ de \Cref{cor:CImuExact}.
+\end{proposition}
+
+\begin{solution}
+No rechazar equivale a $\abs{T}<t_{1-\alpha/2,n-1}$, es decir
+\[
+\left|\frac{\Xbar-\mu_0}{S/\sqrt n}\right|<t_{1-\alpha/2,n-1}
+\iff
+\Xbar-t_{1-\alpha/2,n-1}\frac{S}{\sqrt n}<\mu_0<\Xbar+t_{1-\alpha/2,n-1}\frac{S}{\sqrt n}.
+\]
+Esto es exactamente ``$\mu_0$ cae dentro del IC''.
+\end{solution}
+
+\subsection{Ejemplos resueltos de pruebas, incluyendo finanzas}
+
+\begin{example}[Retorno medio positivo (finanzas)]
+Datos: $n=60$, $\Xbar=0.0005$, $S=0.012$. Prueba $H_0:\mu\le 0$ vs $H_1:\mu>0$ al 5\%.
+\end{example}
+
+\begin{solution}
+La hipótesis nula relevante para un gestor es conservadora:
+\[
+H_0:\mu\le 0
+\qquad\text{vs}\qquad
+H_1:\mu>0.
+\]
+La frontera de $H_0$ es $\mu_0=0$, así que usamos el estadístico
+\[
+T=\frac{\overline X-\mu_0}{S/\sqrt n}
+=\frac{0.0005}{0.012/\sqrt{60}}
+=\frac{0.0005\sqrt{60}}{0.012}
+\approx 0.3228.
+\]
+Con $59$ grados de libertad y nivel $\alpha=0.05$, el valor crítico unilateral es
+\[
+t_{0.95,59}\approx 1.671.
+\]
+La regla de decisión es:
+\[
+\text{rechazar }H_0 \iff T\ge 1.671.
+\]
+Como
+\[
+0.323<1.671,
+\]
+el estadístico cae en la región de no rechazo. Conclusión económica: el rendimiento medio observado es positivo, pero demasiado pequeño respecto a la volatilidad muestral para sostener una afirmación estadística fuerte de ``alpha positivo'' al 5\%.
+\end{solution}
+
+\begin{example}[Volatilidad excede límite (finanzas)]
+Supón normalidad, $n=30$, $S^2=0.000144$ (var diaria). Probar $H_0:\sigma^2\le 0.0001$ vs $H_1:\sigma^2>0.0001$ al 5\%.
+\end{example}
+
+\begin{solution}
+La empresa o mesa de riesgo quiere saber si la varianza verdadera rebasa un límite máximo permitido $\sigma_0^2=0.0001$. La prueba unilateral correcta usa
+\[
+Q=\frac{(n-1)S^2}{\sigma_0^2}
+=\frac{29\cdot 0.000144}{0.0001}
+=41.76.
+\]
+Bajo la frontera de la nula, $Q\sim \chi^2_{29}$. Como la alternativa es ``más volatilidad'', la región de rechazo vive en la cola derecha:
+\[
+\text{rechazar }H_0 \iff Q\ge \chi^2_{0.95,29}\approx 42.56.
+\]
+Pero
+\[
+41.76<42.56.
+\]
+Por tanto, no se rechaza $H_0$. La lectura práctica es fina: la volatilidad observada está cerca del límite, así que aunque no hay evidencia suficiente para declarar incumplimiento estadístico al 5\%, sí hay una señal de vigilancia porque el resultado queda muy próximo al umbral crítico.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.84\textwidth,height=4.5cm,xmin=30,xmax=48,ymin=0,ymax=1.05,
+axis x line=bottom,axis y line=none,ytick=\empty,
+xlabel={Estadístico $\chi^2$},title={Región de rechazo para la prueba sobre $\sigma^2$}]
+\addplot[name path=A, draw=none] coordinates {(42.56,0.22) (48,0.22)};
+\addplot[name path=B, draw=none] coordinates {(42.56,0.78) (48,0.78)};
+\addplot[SoftRed] fill between[of=A and B];
+\addplot[MainBlue,line width=1.6pt] coordinates {(30,0.5) (48,0.5)};
+\addplot[dashed, MainRed, line width=1.3pt] coordinates {(42.56,0.12) (42.56,0.9)};
+\addplot[dashed, MainGreen!80!black, line width=1.3pt] coordinates {(41.76,0.12) (41.76,0.9)};
+\node[text=MainGreen!80!black] at (axis cs:41.76,0.92) {$Q_{obs}=41.76$};
+\node[text=MainRed] at (axis cs:42.56,0.92) {$\chi^2_{0.95,29}$};
+\node[text=MainRed] at (axis cs:45.3,0.64) {rechazo};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La zona roja representa la región de rechazo en la cola derecha: allí caerían valores de volatilidad muestral suficientemente grandes para concluir que el límite fue rebasado. Como $Q_{obs}=41.76$ queda apenas antes del umbral, la evidencia es cercana pero todavía insuficiente al 5\%.
+
+\begin{example}[p-value bilateral en $t$-test]
+Supón $n=20$ y $t_{\text{obs}}=2.1$ en una prueba bilateral sobre $\mu$. ¿p-value aproximado?
+\end{example}
+
+\begin{solution}
+Con $n=20$, los grados de libertad son $19$. En una prueba bilateral, el p-value se calcula como
+\[
+p=2\,\Pbb(t_{19}\ge 2.1).
+\]
+Usando tablas, sabemos que
+\[
+t_{0.975,19}\approx 2.093.
+\]
+Como el estadístico observado $2.1$ está apenas por encima de ese cuantil, el área de cola bilateral es apenas menor que $0.05$. Por ello,
+\[
+p\approx 0.049\text{--}0.050.
+\]
+Interpretación ejecutiva: el resultado es marginalmente significativo. En aplicaciones business, eso sugiere prudencia: una conclusión ``significativa'' existe, pero no es robusta ni holgada.
+\end{solution}
+
+\begin{example}[Proporción de días positivos supera 0.5]
+En $n=200$ días, el activo cerró con retorno positivo en 118 días. Probar $H_0:p\le 0.5$ vs $H_1:p>0.5$ al 5\% usando aproximación normal.
+\end{example}
+
+\begin{solution}
+Primero calculamos la proporción observada:
+\[
+\widehat p=\frac{118}{200}=0.59.
+\]
+Bajo $H_0:p\le 0.5$, la frontera relevante es $p_0=0.5$. El estadístico Wald es
+\[
+W=\frac{\widehat p-p_0}{\sqrt{p_0(1-p_0)/n}}
+=\frac{0.59-0.5}{\sqrt{0.5\cdot 0.5/200}}
+\approx 2.545.
+\]
+Al 5\% en una cola, el valor crítico normal es
+\[
+z_{0.05}\approx 1.645.
+\]
+La regla de decisión es:
+\[
+\text{rechazar }H_0 \iff W\ge 1.645.
+\]
+Como $2.545>1.645$, rechazamos $H_0$. Lectura business: la estrategia tuvo días positivos en una fracción suficientemente alta como para sostener, estadísticamente, que la probabilidad de ``ganar el día'' supera el 50\%.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.84\textwidth,height=4.5cm,xmin=-0.5,xmax=3.1,ymin=0,ymax=1.05,
+axis x line=bottom,axis y line=none,ytick=\empty,
+xlabel={Estadístico $z$},title={Región de rechazo para la prueba sobre proporción}]
+\addplot[name path=A, draw=none] coordinates {(1.645,0.22) (3.1,0.22)};
+\addplot[name path=B, draw=none] coordinates {(1.645,0.78) (3.1,0.78)};
+\addplot[SoftRed] fill between[of=A and B];
+\addplot[MainBlue,line width=1.6pt] coordinates {(-0.5,0.5) (3.1,0.5)};
+\addplot[dashed, MainRed, line width=1.3pt] coordinates {(1.645,0.12) (1.645,0.9)};
+\addplot[dashed, MainGreen!80!black, line width=1.3pt] coordinates {(2.545,0.12) (2.545,0.9)};
+\node[text=MainRed] at (axis cs:1.645,0.92) {$z_{crit}=1.645$};
+\node[text=MainGreen!80!black] at (axis cs:2.545,0.92) {$z_{obs}=2.545$};
+\node[text=MainRed] at (axis cs:2.5,0.64) {rechazo};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} Aquí el estadístico observado sí entra en la franja roja. Eso visualiza por qué se rechaza $H_0$: la proporción observada de días positivos es lo bastante grande como para quedar dentro de la región crítica unilateral.
+
+%================================================
+\section{Regresión lineal: mínimos cuadrados, propiedades, inferencia}
+%================================================
+
+\subsection{Modelo y estimadores OLS}
+
+\begin{definition}[Regresión lineal simple]
+Dados pares $(x_i,y_i)$ con $x_i$ fijos (o condicionados),
+\[
+Y_i=\beta_0+\beta_1 x_i+\varepsilon_i,\qquad \E[\varepsilon_i]=0,\quad \Var(\varepsilon_i)=\sigma^2,
+\]
+con $\Cov(\varepsilon_i,\varepsilon_j)=0$ para $i\neq j$. Para inferencia exacta se suele asumir además
+$\varepsilon_i\sim N(0,\sigma^2)$ i.i.d.
+\end{definition}
+
+Define
+\[
+\xbar=\frac1n\sum x_i,\quad \ybar=\frac1n\sum y_i,\quad
+S_{xx}=\sum (x_i-\xbar)^2,\quad S_{xy}=\sum (x_i-\xbar)(y_i-\ybar).
+\]
+
+\begin{theorem}[Solución OLS]\label{thm:OLS}
+Si $S_{xx}>0$, los minimizadores de $\sum (y_i-\beta_0-\beta_1 x_i)^2$ son
+\[
+\widehat\beta_1=\frac{S_{xy}}{S_{xx}},\qquad \widehat\beta_0=\ybar-\widehat\beta_1\,\xbar.
+\]
+\end{theorem}
+
+\begin{solution}
+Sea $Q(\beta_0,\beta_1)=\sum (y_i-\beta_0-\beta_1 x_i)^2$.
+Deriva e iguala a cero:
+\[
+\frac{\partial Q}{\partial \beta_0}=-2\sum (y_i-\beta_0-\beta_1 x_i)=0,\quad
+\frac{\partial Q}{\partial \beta_1}=-2\sum x_i(y_i-\beta_0-\beta_1 x_i)=0.
+\]
+Estas ecuaciones normales equivalen a $\sum e_i=0$ y $\sum x_i e_i=0$.
+Resolviendo (por álgebra o centrado) se obtiene la fórmula. Unicidad: $S_{xx}>0$.
+\end{solution}
+
+\begin{lemma}[Propiedades de residuales]\label{lem:residuals}
+Con $\widehat y_i=\widehat\beta_0+\widehat\beta_1 x_i$ y $e_i=y_i-\widehat y_i$:
+\[
+\sum_{i=1}^n e_i=0,\qquad \sum_{i=1}^n x_i e_i=0.
+\]
+\end{lemma}
+
+\begin{solution}
+Son exactamente las ecuaciones normales.
+\end{solution}
+
+\subsection{Insesgadez, varianzas y Gauss--Markov (pruebas completas)}
+
+\begin{theorem}[Insesgadez y varianzas de OLS]\label{thm:OLSbiasvar}
+Bajo el modelo con $\E[\varepsilon_i]=0$, $\Var(\varepsilon_i)=\sigma^2$ y covarianzas nulas,
+\[
+\E[\widehat\beta_1]=\beta_1,\quad \E[\widehat\beta_0]=\beta_0,
+\]
+\[
+\Var(\widehat\beta_1)=\frac{\sigma^2}{S_{xx}},\qquad
+\Var(\widehat\beta_0)=\sigma^2\left(\frac1n+\frac{\xbar^2}{S_{xx}}\right).
+\]
+\end{theorem}
+
+\begin{solution}
+Usa $y_i=\beta_0+\beta_1 x_i+\varepsilon_i$.
+Calcula
+\[
+S_{xy}=\sum (x_i-\xbar)(y_i-\ybar)=\beta_1 S_{xx}+\sum (x_i-\xbar)\varepsilon_i,
+\]
+pues la parte con $\beta_0$ desaparece al centrar.
+Entonces
+\[
+\widehat\beta_1=\frac{S_{xy}}{S_{xx}}=\beta_1+\frac{\sum (x_i-\xbar)\varepsilon_i}{S_{xx}}.
+\]
+Esperanza: $\E[\widehat\beta_1]=\beta_1$.
+Varianza (covarianzas nulas):
+\[
+\Var(\widehat\beta_1)=\frac{1}{S_{xx}^2}\Var\!\left(\sum (x_i-\xbar)\varepsilon_i\right)
+=\frac{1}{S_{xx}^2}\sum (x_i-\xbar)^2\sigma^2=\frac{\sigma^2}{S_{xx}}.
+\]
+Para $\widehat\beta_0=\ybar-\widehat\beta_1\xbar$ y $\ybar=\beta_0+\beta_1\xbar+\overline\varepsilon$:
+\[
+\widehat\beta_0=\beta_0+\overline\varepsilon-\xbar(\widehat\beta_1-\beta_1).
+\]
+Usa $\Var(\overline\varepsilon)=\sigma^2/n$ y $\Cov(\overline\varepsilon,\sum (x_i-\xbar)\varepsilon_i)=0$
+(porque $\sum(x_i-\xbar)=0$) para obtener
+$\Var(\widehat\beta_0)=\sigma^2(1/n+\xbar^2/S_{xx})$.
+\end{solution}
+
+\begin{theorem}[Gauss--Markov (BLUE)]\label{thm:GM}
+Bajo las hipótesis lineales, $\widehat\beta_1$ es BLUE: entre estimadores lineales insesgados de $\beta_1$,
+tiene varianza mínima.
+\end{theorem}
+
+\begin{solution}
+Sea $\widetilde\beta_1=\sum a_i Y_i$.
+Insesgadez impone $\sum a_i=0$ y $\sum a_i x_i=1$.
+Entonces $\Var(\widetilde\beta_1)=\sigma^2\sum a_i^2$.
+Minimiza $\sum a_i^2$ con multiplicadores:
+$a_i=\lambda+\mu x_i$.
+De $\sum a_i=0$ y $\sum a_i x_i=1$ se obtiene
+\[
+a_i=\frac{x_i-\xbar}{S_{xx}}.
+\]
+Entonces $\widetilde\beta_1=\sum \frac{x_i-\xbar}{S_{xx}}Y_i=S_{xy}/S_{xx}=\widehat\beta_1$.
+\end{solution}
+
+\subsection{Inferencia exacta bajo normalidad}
+
+\begin{proposition}[Estimador insesgado de $\sigma^2$ en regresión]
+Con residuales $e_i=y_i-\widehat y_i$, define
+\[
+\widehat\sigma^2=\frac{1}{n-2}\sum_{i=1}^n e_i^2.
+\]
+Bajo normalidad de errores, $\E[\widehat\sigma^2]=\sigma^2$.
+\end{proposition}
+
+\begin{solution}
+En el modelo normal, $\sum e_i^2/\sigma^2\sim\chi^2_{n-2}$ (se pierden 2 g.l. por estimar $\beta_0,\beta_1$).
+Entonces $\E[\sum e_i^2]=(n-2)\sigma^2$ y dividir por $n-2$ da insesgadez.
+\end{solution}
+
+\begin{corollary}[$t$-test/IC para $\beta_1$]
+Bajo normalidad,
+\[
+\frac{\widehat\beta_1-\beta_1}{\sqrt{\widehat\sigma^2/S_{xx}}}\sim t_{n-2},
+\quad
+\beta_1\in\left[\widehat\beta_1 \pm t_{1-\alpha/2,n-2}\sqrt{\frac{\widehat\sigma^2}{S_{xx}}}\right].
+\]
+\end{corollary}
+
+\begin{solution}
+$\widehat\beta_1$ es normal con varianza $\sigma^2/S_{xx}$.
+Además, $\sum e_i^2/\sigma^2\sim\chi^2_{n-2}$ e independencia por proyección ortogonal.
+Por definición, el cociente es $t_{n-2}$.
+\end{solution}
+
+\subsection{Ejemplos resueltos de regresión con finanzas}
+
+\begin{example}[CAPM: beta de una acción]\label{ex:capm}
+Sea $y_i=R_i^{(A)}$ y $x_i=R_i^{(M)}$.
+Modelo: $R^{(A)}=\beta_0+\beta_1 R^{(M)}+\varepsilon$.
+Queremos estimar $\beta_1$ y hacer IC.
+\end{example}
+
+\begin{solution}
+Calcula $\widehat\beta_1=S_{xy}/S_{xx}$ con datos.
+Luego $\widehat\sigma^2=\sum e_i^2/(n-2)$.
+IC 95\%:
+\[
+\widehat\beta_1 \pm t_{0.975,n-2}\sqrt{\widehat\sigma^2/S_{xx}}.
+\]
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.80\textwidth,height=6.0cm,xlabel={Retorno del mercado $R_i^{(M)}$},ylabel={Retorno de la acción $R_i^{(A)}$},xmin=-0.04,xmax=0.04,ymin=-0.06,ymax=0.07,axis lines=left,title={Recta CAPM ilustrativa con pendiente positiva}]
+\addplot+[only marks] coordinates {(-0.035,-0.044) (-0.025,-0.030) (-0.020,-0.021) (-0.010,-0.008) (0.000,0.003) (0.010,0.016) (0.018,0.024) (0.028,0.039) (0.035,0.048)};
+\addplot+[domain=-0.04:0.04, samples=100] {0.003 + 1.30*x};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\begin{example}[Duración empírica: retorno de bono vs cambio de yield]
+Sea $y_i$ retorno del bono y $x_i=\Delta y_i$ cambio diario del yield.
+Si $\widehat\beta_1<0$, el signo concuerda con duración (sube yield, baja precio).
+\end{example}
+
+\begin{solution}
+Ajusta OLS y prueba $H_0:\beta_1=0$ con estadístico t.
+Un $\widehat\beta_1$ significativamente negativo apoya la sensibilidad.
+\end{solution}
+
+\begin{example}[Volatilidad vs volumen]
+Sea $y_i=\abs{R_i}$ y $x_i=\log(\text{Vol}_i)$.
+\end{example}
+
+\begin{solution}
+Ajusta OLS. Un $\widehat\beta_1>0$ sugiere asociación positiva entre actividad y magnitud de movimientos.
+\end{solution}
+
+\begin{example}[Spread vs volatilidad]
+Sea $y_i=\text{spread}_i$ y $x_i=\widehat\sigma_i$ (proxy).
+\end{example}
+
+\begin{solution}
+Ajusta OLS y prueba pendiente positiva.
+Interpretación microestructural: spreads más altos cuando el riesgo/información es mayor.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.78\textwidth,height=5.8cm,xlabel={Proxy de volatilidad $\widehat\sigma_i$},ylabel={Spread},xmin=0.005,xmax=0.040,ymin=0.4,ymax=2.4,axis lines=left,title={Relación positiva ilustrativa entre spread y volatilidad}]
+\addplot+[only marks] coordinates {(0.006,0.55) (0.010,0.70) (0.013,0.82) (0.017,1.00) (0.021,1.18) (0.025,1.36) (0.029,1.55) (0.034,1.88) (0.038,2.18)};
+\addplot+[domain=0.005:0.040, samples=100] {0.25 + 50*x};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+%================================================
+\appendix
+%================================================
+
+%================================================
+\section{Apéndice A: Prerrequisitos probabilísticos (recordatorio)}\label{app:prereq}
+%================================================
+
+Este apéndice resume la parte de \emph{Probabilidad} que realmente sostiene la estadística inferencial del texto.
+La idea es sencilla: antes de estimar, construir intervalos o definir regiones de rechazo, necesitamos saber
+qué es una variable aleatoria, cómo se comportan la esperanza y la varianza, por qué la independencia simplifica
+cálculos, y cómo las leyes límite conectan cantidades muestrales con distribuciones asintóticas. En varios de los
+ejercicios del apéndice siguiente se añadirá explícitamente una línea titulada
+\emph{Prerrequisitos de Probabilidad usados}, para que se vea con precisión qué piezas de este apéndice intervienen.
+
+\subsection{Espacios de probabilidad y variables aleatorias}\label{app:prereq-space}
+
+\begin{definition}[Espacio de probabilidad]
+Un espacio de probabilidad es $(\Omega,\mathcal{F},\Pbb)$: $\Omega$ espacio muestral, $\mathcal{F}$ sigma-álgebra,
+$\Pbb$ medida de probabilidad.
+\end{definition}
+
+\begin{definition}[Variable aleatoria, distribución]
+Una v.a.\ es $X:(\Omega,\mathcal{F})\to(\R,\mathcal{B})$ medible.
+Su CDF es $F_X(x)=\Pbb(X\le x)$.
+\end{definition}
+
+\subsection{Esperanza, varianza, covarianza (fórmulas mínimas)}\label{app:prereq-moments}
+
+\begin{proposition}[Linealidad de la esperanza]
+Para constantes $a,b$ y v.a.\ integrables $X,Y$:
+$\E[aX+bY]=a\E[X]+b\E[Y]$.
+\end{proposition}
+
+\begin{proposition}[Varianza y covarianza]
+\[
+\Var(X)=\E[(X-\E[X])^2]=\E[X^2]-\E[X]^2,
+\quad
+\Cov(X,Y)=\E[(X-\E[X])(Y-\E[Y])].
+\]
+Si $X,Y$ son independientes y con segundos momentos finitos, entonces $\Cov(X,Y)=0$.
+\end{proposition}
+
+\begin{proposition}[Varianza de suma]
+Si $X_i$ son no correlacionadas:
+\[
+\Var\!\left(\sum_{i=1}^n X_i\right)=\sum_{i=1}^n \Var(X_i).
+\]
+En particular, si i.i.d. con varianza $\sigma^2$, entonces $\Var(\Xbar)=\sigma^2/n$.
+\end{proposition}
+
+
+\begin{remark}[Qué aporta esta subsección]
+Las identidades de esperanza y varianza permiten pasar de observaciones individuales a estadísticos muestrales.
+En particular, casi todos los cálculos de error estándar del documento parten de dos hechos:
+\[
+\E[\Xbar]=\mu,
+\qquad
+\Var(\Xbar)=\frac{\sigma^2}{n},
+\]
+y éstos dependen directamente de linealidad de la esperanza e independencia.
+\end{remark}
+
+\subsection{Desigualdades esenciales}\label{app:prereq-ineq}
+
+\begin{theorem}[Markov]
+Si $X\ge 0$ y $\E[X]<\infty$, entonces $\Pbb(X\ge a)\le \E[X]/a$ para $a>0$.
+\end{theorem}
+
+\begin{theorem}[Chebyshev]
+Si $\Var(X)<\infty$, entonces $\Pbb(|X-\E[X]|\ge \varepsilon)\le \Var(X)/\varepsilon^2$.
+\end{theorem}
+
+\subsection{Leyes límite: LLN y CLT}\label{app:prereq-limit}
+
+\begin{theorem}[Ley débil de los grandes números (WLLN)]
+Si $X_i$ i.i.d.\ con $\E[X_i]=\mu$ y $\Var(X_i)<\infty$, entonces $\Xbar\to \mu$ en probabilidad.
+\end{theorem}
+
+\begin{solution}
+Se prueba con Chebyshev como en \Cref{cor:consistency-Xbar}.
+\end{solution}
+
+\begin{theorem}[Teorema central del límite (CLT)]
+Si $X_i$ i.i.d.\ con media $\mu$ y varianza $\sigma^2<\infty$, entonces
+$\sqrt{n}(\Xbar-\mu)/\sigma\Rightarrow N(0,1)$.
+\end{theorem}
+
+\begin{remark}
+En inferencia clásica, CLT justifica IC y pruebas aproximadas fuera de normalidad cuando $n$ es grande.
+En lenguaje operativo: si una media muestral está bien centrada y su dispersión se reduce como $1/n$,
+entonces la normal aparece como aproximación universal tras reescalar por $\sqrt{n}$.
+\end{remark}
+
+\subsection{Normal, chi-cuadrada y t: relaciones mínimas}\label{app:prereq-dist}
+
+\begin{proposition}[Normal estándar]
+$Z\sim N(0,1)$ si su densidad es $\varphi(z)=\frac{1}{\sqrt{2\pi}}e^{-z^2/2}$.
+Cuantil $z_{\alpha}$: $\Pbb(Z\ge z_\alpha)=\alpha$.
+\end{proposition}
+
+\begin{proposition}[Chi-cuadrada]
+Si $Z_1,\dots,Z_\nu$ i.i.d.\ $N(0,1)$, entonces $\sum_{i=1}^\nu Z_i^2\sim \chi^2_\nu$.
+\end{proposition}
+
+\begin{proposition}[t de Student]
+Si $Z\sim N(0,1)$, $U\sim \chi^2_\nu$ independientes, entonces
+\[
+T=\frac{Z}{\sqrt{U/\nu}}\sim t_\nu.
+\]
+\end{proposition}
+
+\begin{remark}[Lectura inferencial]
+Estas tres familias aparecen una y otra vez:
+\begin{enumerate}[label=\textbf{(\arabic*)},leftmargin=2.2em]
+\item la normal para pivotes centrados y estandarizados;
+\item la chi-cuadrada para varianzas bajo normalidad;
+\item la $t$ cuando la varianza poblacional es desconocida y se sustituye por $S$.
+\end{enumerate}
+Por eso las regiones de rechazo y los intervalos del texto tienen fronteras dadas por cuantiles
+$z_\alpha$, $\chi^2_{\alpha,\nu}$ o $t_{\alpha,\nu}$.
+\end{remark}
+
+\subsection{Transformaciones y método delta (recordatorio corto)}\label{app:prereq-transform}
+
+\begin{proposition}[Transformación monótona en IC]
+Si $[L,U]$ es IC para $\theta$ y $g$ es monótona creciente, entonces $[g(L),g(U)]$ es IC para $g(\theta)$.
+\end{proposition}
+
+\begin{remark}
+Ej.: IC de $\sigma^2$ $\Rightarrow$ IC de $\sigma$ usando raíz cuadrada.
+\end{remark}
+
+%================================================
+\section{Apéndice B: Ejercicios y soluciones completas}
+%================================================
+
+\noindent\textbf{Guía de lectura.}
+En las soluciones seleccionadas de este apéndice se indica explícitamente qué parte del
+Apéndice~\ref{app:prereq} está siendo usada. El objetivo es conectar cada técnica inferencial
+con su fundamento probabilístico mínimo.
+
+\subsection{Ejercicios con soluciones}
+
+\begin{exercise}[MSE y sesgo: traslación de la media]\label{ex:ex1}
+Sea $\widehat{\Theta}=\overline{X}+c$ un estimador de $\mu$, con $c\in\mathbb{R}$ constante.
+Encuentra el sesgo y el error cuadrático medio (MSE). Determina el valor de $c$ que minimiza el MSE.
+\end{exercise}
+
+\begin{solution}
+\textbf{Prerrequisitos de Probabilidad usados.}
+Linealidad de la esperanza y varianza de la media muestral del \Cref{app:prereq-moments}.
+El paso clave es que sumar una constante cambia la esperanza pero no la varianza.
+
+Sesgo:
+\[
+\mathbb{E}[\overline{X}+c]-\mu
+=
+(\mu+c)-\mu
+=
+c.
+\]
+
+Varianza:
+\[
+\mathrm{Var}(\overline{X}+c)
+=
+\mathrm{Var}(\overline{X})
+=
+\frac{\sigma^2}{n}.
+\]
+
+Por tanto, el error cuadrático medio es
+\[
+\mathrm{MSE}
+=
+\mathrm{Var}(\overline{X}+c)
++
+(\mathrm{sesgo})^2
+=
+\frac{\sigma^2}{n}+c^2.
+\]
+
+Esta expresión se minimiza cuando $c^{*}=0$.  
+Por lo tanto, el mejor estimador dentro de esta familia (en términos de MSE) es
+\[
+\widehat{\Theta}=\overline{X}.
+\]
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.78\textwidth,height=5.8cm,xlabel={$c$},ylabel={MSE},xmin=-1.8,xmax=1.8,ymin=0,ymax=3.8,axis lines=left,ymajorgrids=true,title={El MSE es una parábola con mínimo en $c=0$}]
+\addplot+[domain=-1.8:1.8, samples=200] {0.6 + x^2};
+\addplot+[only marks, mark=*, mark size=2.5pt] coordinates {(0,0.6)};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} La gráfica muestra que desplazar el estimador $\overline X$ por una constante $c$ introduce sesgo cuadrático $c^2$. Como la varianza permanece fija en $\sigma^2/n$, toda desviación de $c=0$ aumenta el MSE.
+
+\begin{exercise}[IC para $\sigma^2$ y anualización]\label{ex:ex2}
+Con $n=20$ y $S^2=0.0004$ (varianza diaria de retornos), construye un IC 95\% para $\sigma^2$ bajo normalidad.
+Luego da IC para $\sigma$ y para $\sigma_{\text{anual}}$.
+\end{exercise}
+
+\begin{solution}
+\textbf{Prerrequisitos de Probabilidad usados.}
+Relación entre normal y chi-cuadrada del \Cref{app:prereq-dist}, junto con transformación monótona de intervalos del \Cref{app:prereq-transform}.
+La parte probabilística profunda aquí es que, bajo normalidad,
+\[
+\frac{(n-1)S^2}{\sigma^2}\sim \chi^2_{n-1},
+\]
+y eso es exactamente lo que genera el pivote para el intervalo.
+
+Grados de libertad: $\nu=n-1=19$.
+Por \Cref{cor:CIvar} con $\alpha=0.05$:
+\[
+\sigma^2\in\left[\frac{19S^2}{\chi^2_{0.975,19}},\ \frac{19S^2}{\chi^2_{0.025,19}}\right].
+\]
+Usando valores típicos (aprox.): $\chi^2_{0.975,19}\approx 32.85$ y $\chi^2_{0.025,19}\approx 8.91$.
+Entonces
+\[
+\text{LI}=\frac{19\cdot 0.0004}{32.85}\approx \frac{0.0076}{32.85}\approx 0.000231,
+\quad
+\text{LS}=\frac{19\cdot 0.0004}{8.91}\approx \frac{0.0076}{8.91}\approx 0.000853.
+\]
+IC para $\sigma$: tomar raíces:
+\[
+\sigma\in[\sqrt{0.000231},\sqrt{0.000853}]\approx [0.0152,\ 0.0292].
+\]
+IC para anualizada: multiplica por $\sqrt{252}\approx 15.874$:
+\[
+\sigma_{\text{anual}}\in[0.0152\cdot 15.874,\ 0.0292\cdot 15.874]\approx[0.241,\ 0.463].
+\]
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.82\textwidth,height=4.2cm,xmin=0.00015,xmax=0.00092,ymin=0,ymax=1.05,
+axis x line=bottom,axis y line=none,ytick=\empty,xlabel={$\sigma^2$ diaria},
+title={IC del 95\% para la varianza diaria}]
+\addplot[name path=A, draw=none] coordinates {(0.000231,0.25) (0.000853,0.25)};
+\addplot[name path=B, draw=none] coordinates {(0.000231,0.75) (0.000853,0.75)};
+\addplot[SoftGreen] fill between[of=A and B];
+\addplot[MainGreen,line width=2pt] coordinates {(0.000231,0.5) (0.000853,0.5)};
+\addplot+[only marks, mark=*, MainRed, mark size=3pt] coordinates {(0.0004,0.5)};
+\node[text=MainGreen] at (axis cs:0.000231,0.87) {$L$};
+\node[text=MainRed] at (axis cs:0.0004,0.87) {$S^2$};
+\node[text=MainGreen] at (axis cs:0.000853,0.87) {$U$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} El punto central representa la varianza muestral $S^2=0.0004$ y el segmento horizontal muestra el rango de valores plausibles para $\sigma^2$. Después, el mismo intervalo se transforma de manera monótona a escalas de volatilidad diaria y anualizada.
+
+\begin{exercise}[$t$-test unilateral (retornos)]\label{ex:ex3}
+Retornos diarios: $n=60$, $\Xbar=0.0005$, $S=0.012$.
+Prueba $H_0:\mu\le 0$ vs $H_1:\mu>0$ al 5\%.
+\end{exercise}
+
+\begin{solution}
+\textbf{Prerrequisitos de Probabilidad usados.}
+Distribución $t$ de Student del \Cref{app:prereq-dist}; además, implícitamente se usa que $\Xbar$ resume la muestra
+y que su dispersión depende de $\Var(\Xbar)=\sigma^2/n$ del \Cref{app:prereq-moments}.
+La región de rechazo se construye con un cuantil $t_{0.95,59}$, es decir, con una frontera probabilística.
+
+Es exactamente el Ejemplo de la sección de pruebas:
+\[
+t_{\text{obs}}=\frac{0.0005}{0.012/\sqrt{60}}\approx 0.323.
+\]
+Crítico $t_{0.95,59}\approx 1.671$.
+No se rechaza $H_0$.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.84\textwidth,height=4.5cm,xmin=-0.5,xmax=2.2,ymin=0,ymax=1.05,
+axis x line=bottom,axis y line=none,ytick=\empty,xlabel={Estadístico $t$},
+title={Región de rechazo unilateral y posición de $t_{obs}$}]
+\addplot[name path=A, draw=none] coordinates {(1.671,0.22) (2.2,0.22)};
+\addplot[name path=B, draw=none] coordinates {(1.671,0.78) (2.2,0.78)};
+\addplot[SoftRed] fill between[of=A and B];
+\addplot[MainBlue,line width=1.6pt] coordinates {(-0.5,0.5) (2.2,0.5)};
+\addplot[dashed, MainRed, line width=1.3pt] coordinates {(1.671,0.12) (1.671,0.9)};
+\addplot[dashed, MainGreen!80!black, line width=1.3pt] coordinates {(0.323,0.12) (0.323,0.9)};
+\node[text=MainGreen!80!black] at (axis cs:0.323,0.93) {$t_{obs}=0.323$};
+\node[text=MainRed] at (axis cs:1.671,0.93) {$t_{crit}=1.671$};
+\node[text=MainRed] at (axis cs:1.95,0.64) {rechazo};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} Como $t_{obs}=0.323$ queda claramente a la izquierda del valor crítico $1.671$, el estadístico observado no entra en la región de rechazo. Por eso la evidencia a favor de $\mu>0$ es insuficiente al 5\%.
+
+\begin{exercise}[CAPM: IC para beta]\label{ex:ex4}
+Con $n=120$, $S_{xx}=0.018$, $\widehat\sigma^2=0.00009$, y $\widehat\beta_1=1.15$,
+construye un IC 95\% para $\beta_1$.
+\end{exercise}
+
+\begin{solution}
+\textbf{Prerrequisitos de Probabilidad usados.}
+Uso de cuantiles de la distribución $t$ del \Cref{app:prereq-dist} y, detrás del error estándar,
+la lógica de esperanza/varianza de combinaciones lineales del \Cref{app:prereq-moments}.
+En regresión lineal, el intervalo sale de estandarizar el estimador y compararlo con una ley $t$.
+
+Grados de libertad: $n-2=118$.
+Error estándar:
+\[
+\widehat{\mathrm{se}}(\widehat\beta_1)=\sqrt{\frac{\widehat\sigma^2}{S_{xx}}}
+=\sqrt{\frac{0.00009}{0.018}}=\sqrt{0.005}=0.0707107.
+\]
+Cuantil $t_{0.975,118}\approx 1.98$ (muy cercano a 1.96).
+Semiancho $\approx 1.98\cdot 0.07071\approx 0.1400$.
+Por tanto:
+\[
+\beta_1\in[1.15-0.14,\ 1.15+0.14]=[1.01,\ 1.29]\ \text{(aprox.)}.
+\]
+Interpretación: beta es consistentemente mayor que 1 (casi justo), alta exposición al mercado.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.82\textwidth,height=4.2cm,xmin=0.95,xmax=1.34,ymin=0,ymax=1.05,
+axis x line=bottom,axis y line=none,ytick=\empty,xlabel={$\beta_1$},title={IC del 95\% para la beta CAPM}]
+\addplot[name path=A, draw=none] coordinates {(1.01,0.25) (1.29,0.25)};
+\addplot[name path=B, draw=none] coordinates {(1.01,0.75) (1.29,0.75)};
+\addplot[SoftOrange] fill between[of=A and B];
+\addplot[MainOrange,line width=2pt] coordinates {(1.01,0.5) (1.29,0.5)};
+\addplot+[only marks, mark=*, MainRed, mark size=3pt] coordinates {(1.15,0.5)};
+\addplot[dashed, MainBlue] coordinates {(1,0.15) (1,0.85)};
+\node[text=MainBlue] at (axis cs:1,0.9) {$1$};
+\node[text=MainRed] at (axis cs:1.15,0.9) {$\widehat\beta_1$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} El segmento muestra que casi todo el rango plausible para $\beta_1$ está por encima de $1$. Eso sugiere una acción con sensibilidad al mercado ligeramente superior a la unidad.
+
+\begin{exercise}[Ejercicio extra: IC de media y decisión por dualidad]\label{ex:ex5}
+Con $n=16$, $\Xbar=10.2$, $S=2.4$ y suponer normalidad.
+(i) Construye IC 95\% para $\mu$.
+(ii) Decide si rechazas $H_0:\mu=9$ al 5\% (bilateral) usando dualidad.
+\end{exercise}
+
+\begin{solution}
+\textbf{Prerrequisitos de Probabilidad usados.}
+Distribución $t$ del \Cref{app:prereq-dist} y la interpretación de cuantiles probabilísticos.
+La dualidad con la prueba bilateral se apoya en que el mismo pivote aleatorio produce simultáneamente
+el intervalo y la región de rechazo.
+
+(i) $\nu=15$, $t_{0.975,15}\approx 2.131$.
+Semiancho: $2.131\cdot 2.4/\sqrt{16}=2.131\cdot 0.6=1.2786$.
+IC: $10.2\pm 1.279\Rightarrow [8.921,\ 11.479]$.
+(ii) Como $9\in[8.921,11.479]$, \emph{no} se rechaza $H_0$ al 5\%.
+\end{solution}
+
+\begin{center}
+\begin{tikzpicture}
+\begin{axis}[width=0.84\textwidth,height=4.3cm,xmin=8.5,xmax=11.8,ymin=0,ymax=1.05,
+axis x line=bottom,axis y line=none,ytick=\empty,xlabel={$\mu$},
+title={Dualidad entre IC y prueba bilateral}]
+\addplot[name path=A, draw=none] coordinates {(8.921,0.25) (11.479,0.25)};
+\addplot[name path=B, draw=none] coordinates {(8.921,0.75) (11.479,0.75)};
+\addplot[SoftBlue] fill between[of=A and B];
+\addplot[MainBlue,line width=2pt] coordinates {(8.921,0.5) (11.479,0.5)};
+\addplot+[only marks, mark=*, MainRed, mark size=3pt] coordinates {(10.2,0.5)};
+\addplot+[only marks, mark=square*, MainGreen!70!black, mark size=2.7pt] coordinates {(9,0.5)};
+\node[text=MainRed] at (axis cs:10.2,0.9) {$\overline X$};
+\node[text=MainGreen!70!black] at (axis cs:9,0.18) {$\mu_0=9$};
+\end{axis}
+\end{tikzpicture}
+\end{center}
+
+\noindent\textit{Explicación de la figura.} El valor nulo $\mu_0=9$ cae dentro del intervalo de confianza del 95\%. Esa inclusión visualiza inmediatamente la dualidad: si el valor hipotético pertenece al IC, la prueba bilateral no rechaza $H_0$ al mismo nivel.
+
+%================================================
+\end{document}
+
